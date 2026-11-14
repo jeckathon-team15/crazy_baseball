@@ -6,7 +6,13 @@ import { CHAT_FALLBACK_REPLY, CHAT_START_COUNT } from "@/lib/config";
 const cases: Array<[string, () => void]> = [
   ["시작 카운트에서 ball → 볼 1", () => {
     assert.deepEqual(applyCall(CHAT_START_COUNT, "ball"), {
-      count: { balls: 1, strikes: 0, outs: 2 },
+      count: { balls: 1, strikes: 0, outs: 0 },
+      ended: false,
+    });
+  }],
+  ["0아웃 2스트라이크에서 strike → 1아웃, 종료 아님", () => {
+    assert.deepEqual(applyCall({ balls: 1, strikes: 2, outs: 0 }, "strike"), {
+      count: { balls: 0, strikes: 0, outs: 1 },
       ended: false,
     });
   }],

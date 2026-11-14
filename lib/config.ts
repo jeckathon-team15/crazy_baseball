@@ -39,8 +39,8 @@ export const CLAUDE_MODEL = process.env.CLAUDE_MODEL ?? "claude-sonnet-5-5";
 
 // ── 대화 시뮬레이터 ──────────────────────────────────────
 
-/** 화면이 보내는 시작 볼카운트 (2아웃에서 시작) */
-export const CHAT_START_COUNT = { balls: 0, strikes: 0, outs: 2 } as const;
+/** 화면이 보내는 시작 볼카운트 (0아웃에서 시작) */
+export const CHAT_START_COUNT = { balls: 0, strikes: 0, outs: 0 } as const;
 
 /** 볼카운트 규칙: 볼 4개면 카운트 초기화, 스트라이크 3개면 1아웃, 3아웃이면 대화 종료 */
 export const CHAT_COUNT_RULES = { ballsReset: 4, strikesForOut: 3, outsToEnd: 3 } as const;
