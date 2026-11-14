@@ -108,7 +108,7 @@ function buildChatSystem(profile: ChatProfile, count: Count): string {
 
 function buildTipsSystem(): string {
   return [
-    "너는 직장·친구 사이 대화 코치다. 사용자는 야구 팬인 상대와 대화 연습을 하다가 3아웃으로 대화가 끝났다.",
+    "너는 직장·친구 사이 대화 코치다. 사용자는 야구 팬인 상대와 대화 연습을 마쳤다. 수동 종료일 수도 있으므로 3아웃이나 실패라고 단정하지 않는다.",
     `대화를 보고, 다음에 어떤 방식으로 말하면 좋을지 팁 ${CHAT_TIP_COUNT}개를 준다.`,
     "- 정확한 대사를 주지 말고 말하는 방식을 알려준다.",
     `- title은 ${CHAT_TIP_TITLE_MAX}자 이내, desc는 한 문장.`,
@@ -246,4 +246,9 @@ export async function runChatTurn(req: ChatRequest): Promise<ChatResponse> {
   }
 
   return result;
+}
+
+export async function finishChat(profile:ChatProfile,messages:ChatMessage[]):Promise<{tips:Tip[];fallback:boolean}>{
+ const tips=messages.some(m=>m.role==="user")?await generateTips(profile,messages):null;
+ return {tips:tips??CHAT_FALLBACK_TIPS.map(t=>({...t})),fallback:tips===null};
 }

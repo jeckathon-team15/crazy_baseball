@@ -1,6 +1,6 @@
 import type { ChatMessage, ChatProfile, ChatRequest, Count } from "@/types/chat";
 import { CHAT_START_COUNT } from "@/lib/config";
-import { runChatTurn } from "@/lib/ai/chat";
+import { runChatTurn, finishChat } from "@/lib/ai/chat";
 
 // POST /api/chat — 대화 한 턴. 서버는 아무것도 저장하지 않고, 화면이 매번 대화 전체와 볼카운트를 보냅니다.
 
@@ -62,6 +62,8 @@ export async function POST(request: Request) {
 
   const messages = parseMessages(body.messages);
   if (!messages) return bad("대화 목록(messages) 형식이 올바르지 않습니다.");
+
+  if(body.action === "finish") return Response.json(await finishChat(profile,messages));
 
   const last = messages[messages.length - 1];
   if (!last || last.role !== "user") return bad("마지막 메시지는 사용자의 말이어야 합니다.");

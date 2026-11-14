@@ -25,3 +25,13 @@ export function dailyAsReport(daily:DailyMood,name:string,relation:Relation='bos
   forecast:{mood:daily.mood,moodScore:daily.score,headline:`${daily.team} 팬과의 대화 준비`,reason:MOODS[moodKey(daily.mood)].sentence,lunch:{menu:"국밥",comment:""},tips:unhappy?["지난 경기의 실수는 먼저 꺼내지 마세요.","점심이나 주말 계획으로 말문을 열어보세요."]:["가볍게 인사를 건네보세요.","상대가 경기 이야기를 꺼내면 함께 기뻐해주세요."],fallback:false},
  };
 }
+
+export function chatOpening(mood:MoodKey,relation:Relation):string {
+ const openings:Record<MoodKey,Record<Relation,string>>={
+ vgood:{boss:"어제 경기 봤어? 오늘은 야구 얘기만 해도 기분이 좋네.",friend:"야, 어제 경기 봤냐? 오늘은 야구 얘기 하루 종일도 가능하다!"},
+ good:{boss:"오늘은 기분이 괜찮네. 밥 먹으면서 야구 얘기나 할까?",friend:"오늘 기분 괜찮다. 밥 먹으면서 야구 얘기나 할래?"},
+ normal:{boss:"점심시간이네. 오늘은 뭐 먹을까?",friend:"야, 점심 뭐 먹을래?"},
+ bad:{boss:"어제 경기 때문에 아직 좀 그러네. 오늘은 야구 얘기는 말자.",friend:"어제 경기 생각하면 아직 좀 그렇다. 오늘은 야구 얘기 말자."},
+ vbad:{boss:"오늘은 야구의 야 자도 꺼내지 마. 일단 밥이나 먹자.",friend:"나 오늘 야구 얘기 들으면 터진다. 일단 밥이나 먹자."},
+ };return openings[mood][relation];
+}

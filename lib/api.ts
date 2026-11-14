@@ -64,3 +64,9 @@ export async function sendChat(req: ChatRequest): Promise<ChatResponse> {
   if (!data) throw new Error("답장 응답이 비어 있습니다.");
   return data as ChatResponse;
 }
+
+export async function finishChatReview(req:ChatRequest):Promise<{tips:import("@/types/chat").Tip[];fallback:boolean}>{
+ const res=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...req,action:"finish"})});
+ if(!res.ok)throw new Error("대화 분석을 불러오지 못했어요. 다시 시도해주세요.");
+ return res.json();
+}

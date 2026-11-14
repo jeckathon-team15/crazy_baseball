@@ -5,9 +5,9 @@ import design from "./v7-design.json";
 import { MOODS, ORDER, type MoodKey } from "./v7-moods";
 import { CHAT_START_COUNT, DISPLAY_NAME_RANGE } from "@/lib/config";
 import type { ChatMessage, Count, Relation, Tip } from "@/types/chat";
-import { getForecast, getDailyMood, sendChat } from "@/lib/api";
+import { getForecast, getDailyMood, sendChat, finishChatReview } from "@/lib/api";
 import NoGame from "./no-game";
-import { dailyAsReport, moodKey, extremeDemo, GAME_DATE } from "./daily-experience";
+import { dailyAsReport, moodKey, extremeDemo, GAME_DATE, chatOpening } from "./daily-experience";
 import type { DailyMood } from "@/lib/analysis/daily-mood";
 import type { ForecastResponse } from "@/types/forecast";
 import "./v7.css";
@@ -27,7 +27,7 @@ import kiwoomLogo from "./assets/team-logos/kiwoom_sym.png";
 
 const teamLogos:Record<string,typeof lgLogo>={LG:lgLogo,두산:doosanLogo,KIA:kiaLogo,삼성:samsungLogo,롯데:lotteLogo,한화:hanwhaLogo,SSG:ssgLogo,NC:ncLogo,KT:ktLogo,키움:kiwoomLogo};
 
-type Screen = keyof typeof design | "no_game";
+type Screen = keyof typeof design | "no_game" | "review";
 type TemplateNode = string | {tag:string;attrs:Record<string,string>;children:TemplateNode[]};
 type Values = Record<string,unknown>;
 const teams = [{name:"LG",color:"#C30452"},{name:"두산",color:"#131230"},{name:"KIA",color:"#C8102E"},{name:"삼성",color:"#074CA1"},{name:"롯데",color:"#041E42"},{name:"한화",color:"#FF6600"},{name:"SSG",color:"#CE0E2D"},{name:"NC",color:"#315288"},{name:"KT",color:"#000000"},{name:"키움",color:"#570514"}];
@@ -51,11 +51,12 @@ export default function V7App(){
  const [team,setTeam]=useState('LG');const [name,setName]=useState('과장님');const [relation,setRelation]=useState<Relation>('boss');
  const [mood,setMood]=useState<MoodKey>('vbad');const [report,setReport]=useState<ForecastResponse|null>(null);const [error,setError]=useState('');
  const [messages,setMessages]=useState<ChatMessage[]>([]);const [input,setInput]=useState('');const [chatCount,setChatCount]=useState<Count>({...CHAT_START_COUNT});const [pending,setPending]=useState(false);const [tips,setTips]=useState<Tip[]|null>(null);
+ const [reviewFallback,setReviewFallback]=useState(false);
  const [analysisStage,setAnalysisStage]=useState<AnalysisStage>(0);const analysisController=useRef<AbortController|null>(null);
 const request=useRef(0);const log=useRef<HTMLDivElement>(null);
  useEffect(()=>{if(log.current)log.current.scrollTop=log.current.scrollHeight;},[messages]);
  function go(next:Screen){setScreen(next);window.scrollTo({top:0});}
- function startChat(){setMessages([{role:'partner',text:relation==='friend'?'야, 그 경기 봤어? 오늘은 말 좀 조심해…':'점심시간이네요. 그 경기 때문에 아직 마음이 좀 복잡해요.'}]);setChatCount({...CHAT_START_COUNT});setTips(null);setInput('');setError('');go('chat');}
+ function startChat(){setMessages([{role:'partner',text:chatOpening(mood,relation)}]);setChatCount({...CHAT_START_COUNT});setTips(null);setInput('');setError('');go('chat');}
 
  function cancelAnalysis(){analysisController.current?.abort();request.current++;go('main');}
  async function analyze(testMode=false){
@@ -79,10 +80,15 @@ const request=useRef(0);const log=useRef<HTMLDivElement>(null);
  }
 
  function navigate(href:string){if(href==='Main.dc.html'){request.current++;go('main');}else if(href==='WebLoading.dc.html'){void analyze();}else if(href==='WebResult.dc.html'){if(report)go('result');else void analyze();}else if(href==='SimChat.dc.html')startChat();else if(href==='SimWarning.dc.html')go('warning');}
+ async function endConversation(){
+  if(pending)return;setPending(true);setError('');
+  try{const result=await finishChatReview({profile:{relation,displayName:name.trim(),team,mood:MOODS[mood].label,moodReason:[report?.forecast.reason??MOODS[mood].sentence,...(report?.performance.highlights??[])].join(' ')},messages,count:chatCount});setTips(result.tips);setReviewFallback(result.fallback);go('review');}
+  catch(e){setError(e instanceof Error?e.message:'대화 분석을 불러오지 못했어요.');}finally{setPending(false);}
+ }
  async function send(){
   const value=input.trim();if(!value||chatCount.outs>=3||pending)return;
   const before=messages;const next:ChatMessage[]=[...messages,{role:'user',text:value}];setMessages(next);setInput('');setError('');setPending(true);
-  try{const result=await sendChat({profile:{relation,displayName:name.trim(),team,mood:MOODS[mood].label,moodReason:report?.forecast.reason??MOODS[mood].sentence},messages:next,count:chatCount});setMessages([...next,{role:'partner',text:result.reply}]);setChatCount(result.count);if(result.ended){setTips(result.tips??null);go('warning');}}
+  try{const result=await sendChat({profile:{relation,displayName:name.trim(),team,mood:MOODS[mood].label,moodReason:[report?.forecast.reason??MOODS[mood].sentence,...(report?.performance.highlights??[])].join(' ')},messages:next,count:chatCount});setMessages([...next,{role:'partner',text:result.reply}]);setChatCount(result.count);if(result.ended){setTips(result.tips??null);setReviewFallback(result.fallback);go('review');}}
   catch(e){setMessages(before);setInput(value);setError(e instanceof Error?e.message:'답장을 받지 못했어요. 다시 보내주세요.');}finally{setPending(false);}
  }
 
@@ -123,12 +129,13 @@ const request=useRef(0);const log=useRef<HTMLDivElement>(null);
   if(n.tag==='section'&&n.attrs['aria-label']?.endsWith('과 대화')){props['aria-label']=`${name} 대화`;props['data-chat-section']='true';}
   if(n.attrs.role==='dialog')props['data-warning-dialog']='true';
   if(n.tag==='a'&&n.attrs.href==='SimWarning.dc.html')return null;
-  if(screen==='chat'&&n.tag==='a'&&n.attrs.href==='WebResult.dc.html')return <div key={key} className='chat-header-actions'>{createElement(n.tag,props,'분석 결과로 돌아가기')}<button type='button' disabled={pending} onClick={()=>{setMessages([]);setInput('');setTips(null);setChatCount({...CHAT_START_COUNT});setError('');go(report?'result':'main');}}>대화 종료</button></div>;
+  if(screen==='chat'&&n.tag==='a'&&n.attrs.href==='WebResult.dc.html')return <div key={key} className='chat-header-actions'>{createElement(n.tag,props,'분석 결과로 돌아가기')}<button type='button' disabled={pending} onClick={()=>void endConversation()}>{pending?'대화 분석 중…':'대화 종료'}</button></div>;
   if(screen==='main'&&n.tag==='div'&&String(style.gridTemplateColumns).includes('auto-fill'))props.className='team-picker-grid';
   if(n.attrs['data-team']){const label=n.attrs['data-team'];return createElement('button',props,<Image key="logo" src={teamLogos[label]} alt="" width={36} height={36} sizes="36px" style={{width:36,height:36,objectFit:'contain',flexShrink:0}}/>,label);}
   if(n.tag==='span'&&style.background==='#C30452')return <Image key={key} src={teamLogos[team]} alt={`${team} 로고`} width={24} height={24} sizes="24px" style={{width:24,height:24,objectFit:'contain'}}/>;
   if(n.tag==='input')return createElement(n.tag,props);if(screen==='main'&&n.tag==='a'&&n.attrs.href==='WebLoading.dc.html')return <div key={key} className='analysis-actions'>{createElement(n.tag,props,`${team}로 분석 시작 →`)}<button className='extreme-test' aria-label='테스트 · 극대노 체험' disabled={!name.trim()} onClick={()=>void analyze(true)}>테스트 · 극대노</button></div>;
   const children=n.children.map((c,i)=>render(c,`${key}.${i}`,v));return createElement(n.tag,props,...children);
  }
+ if(screen==='review')return <div className="v7-root" data-screen="review"><main className="conversation-review"><header><span>야친자 경보기</span><button onClick={()=>go(report?'result':'main')}>경기 분석으로 돌아가기</button></header><section><small>{chatCount.outs>=3?'3아웃으로 종료':'직접 종료한 대화'}</small><h1>대화 복기</h1><p>{name}과 나눈 대화를 돌아보세요.</p><div className="review-stats"><span>내가 보낸 말 <b>{messages.filter(m=>m.role==='user').length}개</b></span><span>종료 카운트 <b>{chatCount.balls}B · {chatCount.strikes}S · {chatCount.outs}O</b></span></div><h2>다음 대화에서는</h2>{messages.some(m=>m.role==='user')?(tips??[]).map((tip,i)=><article key={i}><h3>{tip.title}</h3><p>{tip.desc}</p></article>):<p>아직 보낸 메시지가 없어요. 한마디 나눈 뒤 종료하면 대화에 맞는 팁을 받을 수 있어요.</p>}{reviewFallback&&messages.some(m=>m.role==='user')&&<small>AI 분석을 받지 못해 기본 대화 팁을 보여드려요.</small>}<details><summary>나눈 대화 다시 보기</summary>{messages.map((m,i)=><p key={i}><b>{m.role==='user'?'나':name}</b> · {m.text}</p>)}</details><button className="review-retry" onClick={startChat}>다시 대화하기</button></section></main></div>;
  return <div className="v7-root" data-screen={screen}>{error&&<p className="v7-error" role="alert">{error}</p>}{screen==='no_game'?<NoGame date={date} team={team} name={name} pending={daily?.status==='pending'} logo={teamLogos[team]} onBack={()=>go('main')} onChat={startChat}/>:screen==='loading'?<AnalysisLoading stage={analysisStage} team={team} logo={teamLogos[team]} onCancel={cancelAnalysis}/>:render(design[screen] as TemplateNode,'root',values)}{screen==='main'&&<footer className='stadium-credit'>사진: 잠실야구장 · Cyberdoomslayer, Wikimedia Commons (<a href='https://creativecommons.org/licenses/by-sa/4.0/' target='_blank' rel='noreferrer'>CC BY-SA 4.0</a>)</footer>}</div>;
 }
