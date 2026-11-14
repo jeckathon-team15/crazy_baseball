@@ -166,7 +166,7 @@ export default function V7App(){
  const selected=teams.find(t=>t.name===team)??teams[0];const m=MOODS[mood];
  const values:Values={sentence:moodSentence(mood),faceFill:m.face,blush:m.blush,eyeRy:m.eyeRy,browW:m.browW,browL:m.browL,browR:m.browR,xAnim:m.x,yAnim:m.y,sAnim:m.s,rAnim:m.r,ariaLabel:`기분이 ${m.label}인 야구공 캐릭터`,isVgood:mood==='vgood',isGood:mood==='good',isNormal:mood==='normal',isBad:mood==='bad',isVbad:mood==='vbad',openEyes:mood!=='vgood',moods:ORDER.map(k=>({label:MOODS[k].label,pressed:String(k===mood),bg:k===mood?'#1C1C1E':'#FFFFFF',fg:k===mood?'#FFFFFF':'#1C1C1E',border:k===mood?'#1C1C1E':'#D1D1D6',pick:()=>setMood(k)}))};
  function countBoard(){
-  const status=ended?'삼진 아웃!':count.strikes===2?'투 스트라이크!':count.strikes===1?'원 스트라이크!':'플레이볼!';
+  const status=ended?'삼진 아웃!':count.strikes===2?'투 스트라이크!':count.strikes===1?'원 스트라이크!':count.outs===2?'투아웃!':count.outs===1?'원아웃!':'플레이볼!';
   return <aside className="v7-count" aria-label={`볼 ${count.balls}, 스트라이크 ${count.strikes}, 아웃 ${count.outs}`}><div className="v7-board">{[{label:'B',num:count.balls,total:3,color:'#34C759'},{label:'S',num:count.strikes,total:2,color:'#FFCC00'},{label:'O',num:count.outs,total:2,color:'#FF3B30'}].map(row=><div className="v7-countrow" key={row.label}><b>{row.label}</b><div className="v7-lights">{Array.from({length:row.total},(_,i)=><i key={i} style={{background:i<row.num?row.color:undefined}}/>)}</div></div>)}</div><strong>{status}</strong><small>무난한 말은 볼<br/>위험한 말은 스트라이크<br/>3아웃이면 대화 끝</small></aside>;
  }
  function render(n:TemplateNode,key:string,v:Values):ReactNode{
