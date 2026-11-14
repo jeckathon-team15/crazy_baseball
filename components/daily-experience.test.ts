@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { dailyAsReport, moodKey, extremeDemo } from "./daily-experience";
+import { dailyAsReport, moodKey, extremeDemo, GAME_DATE, EXPERIENCE_DATE } from "./daily-experience";
 import type { DailyMood } from "@/lib/analysis/daily-mood";
 
 test("does not invent an emotion or score when no game exists", () => {
@@ -22,4 +22,14 @@ test("keeps the requested game date, result and model emotion", () => {
  assert.equal(report.forecast.mood,"안 좋음");
  assert.equal(report.performance.highlights.some(x=>x.includes("끝내기")),false);
  assert.equal(moodKey(report.forecast.mood),"bad");
+});
+
+ test("uses October 6 games for the October 7 experience",()=>{
+ assert.equal(EXPERIENCE_DATE,"2026-10-07");assert.equal(GAME_DATE,"2026-10-06");
+});
+ test("mood copy never invents a losing streak or game event",()=>{
+ for(const mood of ["매우 좋음","좋음","보통","안 좋음","매우 안 좋음"] as const){
+ const report=dailyAsReport({team:"LG",date:GAME_DATE,status:"ready",score:0,mood,games:[{gameId:"one",startsAt:GAME_DATE+"T18:30:00+09:00",date:GAME_DATE,opponent:"한화",teamScore:1,oppScore:0,result:"W"}]},"과장님")!;
+ assert.doesNotMatch(report.forecast.reason,/연패|연승|끝내기|역전패|재미용/);
+ }
 });

@@ -7,7 +7,7 @@ import { CHAT_START_COUNT, DISPLAY_NAME_RANGE } from "@/lib/config";
 import type { ChatMessage, Count, Relation, Tip } from "@/types/chat";
 import { getForecast, getDailyMood, sendChat } from "@/lib/api";
 import NoGame from "./no-game";
-import { dailyAsReport, moodKey, extremeDemo } from "./daily-experience";
+import { dailyAsReport, moodKey, extremeDemo, GAME_DATE } from "./daily-experience";
 import type { DailyMood } from "@/lib/analysis/daily-mood";
 import type { ForecastResponse } from "@/types/forecast";
 import "./v7.css";
@@ -47,7 +47,7 @@ const isTextNode=(n:TemplateNode,text:string)=>typeof n!=='string'&&n.children[0
 
 export default function V7App(){
  const [screen,setScreen]=useState<Screen>('main');
- const [date,setDate]=useState('2026-10-01');const dateInput=useRef<HTMLInputElement>(null);const [dataMode,setDataMode]=useState<'live'|'sample'>('live');const [daily,setDaily]=useState<DailyMood|null>(null);
+ const [date,setDate]=useState(GAME_DATE);const dateInput=useRef<HTMLInputElement>(null);const [dataMode,setDataMode]=useState<'live'|'sample'>('live');const [daily,setDaily]=useState<DailyMood|null>(null);
  const [team,setTeam]=useState('LG');const [name,setName]=useState('과장님');const [relation,setRelation]=useState<Relation>('boss');
  const [mood,setMood]=useState<MoodKey>('vbad');const [report,setReport]=useState<ForecastResponse|null>(null);const [error,setError]=useState('');
  const [messages,setMessages]=useState<ChatMessage[]>([]);const [input,setInput]=useState('');const [chatCount,setChatCount]=useState<Count>({...CHAT_START_COUNT});const [pending,setPending]=useState(false);const [tips,setTips]=useState<Tip[]|null>(null);
@@ -59,7 +59,7 @@ const request=useRef(0);const log=useRef<HTMLDivElement>(null);
 
  function cancelAnalysis(){analysisController.current?.abort();request.current++;go('main');}
  async function analyze(testMode=false){
-  const selectedDate=testMode?'2026-10-01':dateInput.current?.value||date;if(!name.trim()||!selectedDate)return;setDate(selectedDate);if(testMode){setDataMode('sample');setTeam('한화');setDate('2026-10-01');}
+  const selectedDate=testMode?GAME_DATE:dateInput.current?.value||date;if(!name.trim()||!selectedDate)return;setDate(selectedDate);if(testMode){setDataMode('sample');setTeam('한화');setDate(GAME_DATE);}
   analysisController.current?.abort();
   const controller=new AbortController();analysisController.current=controller;
   const id=++request.current;setError('');setReport(null);setDaily(null);setAnalysisStage(0);go('loading');
