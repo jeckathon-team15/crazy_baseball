@@ -48,6 +48,15 @@ const TEMPLATE_TIPS=[['진 경기 얘기는 먼저 꺼내지 않기','결과나 
 // 예보 기분 → 화면 표정 (이름이 같습니다)
 const MOOD_KEY_BY_LABEL:Record<string,MoodKey>=Object.fromEntries(ORDER.map(k=>[MOODS[k].label,k]));
 const ADVICE_TITLE:Record<MoodKey,string>={vgood:'먼저 말 걸어도 좋아요!',good:'편하게 인사하세요!',normal:'평소처럼 대하세요',bad:'말 한마디 조심하세요',vbad:'최대한 피하세요!'};
+// 내일의 조언 카드 색: 좋음 계열 초록, 보통 노랑, 나쁨 계열 빨강
+type AdviceTone={bg:string;label:string;title:string};
+const ADVICE_TONES:Record<'green'|'yellow'|'red',AdviceTone>={
+ green:{bg:'#E8F7EC',label:'#1E7B34',title:'#0F5A22'},
+ yellow:{bg:'#FFF7DB',label:'#A05A00',title:'#7A4300'},
+ red:{bg:'#FFF2F3',label:'#D70015',title:'#8A0010'},
+};
+const ADVICE_TONE_BY_MOOD:Record<MoodKey,keyof typeof ADVICE_TONES>={vgood:'green',good:'green',normal:'yellow',bad:'red',vbad:'red'};
+const isTextNode=(n:TemplateNode,text:string)=>typeof n!=='string'&&n.children[0]===text;
 const RESULT_LABEL:Record<GameResult['result'],string>={W:'승',L:'패',D:'무'};
 const NO_GAMES='경기 자료 준비 중';
 /** 최근 경기(최근 순)로 결과 화면 숫자를 만듭니다. */
@@ -185,6 +194,12 @@ export default function V7App(){
   if(n.attrs['data-action']==='send'){props.onClick=()=>void send();props.disabled=!input.trim()||ended||pending;}
   if(n.tag==='section'&&n.attrs['aria-label']?.endsWith('과 대화')){props['aria-label']=`${withGwa(who)} 대화`;props['data-chat-section']='true';}
   if(style.background==='#C30452')props.style={...style,background:selected.color};
+  if(screen==='result'){
+   const tone=ADVICE_TONES[ADVICE_TONE_BY_MOOD[mood]];
+   if(n.tag==='section'&&n.children.some(c=>isTextNode(c,'내일의 조언'))){props.style={...style,background:tone.bg,transition:'background .3s'};props['data-advice-tone']=ADVICE_TONE_BY_MOOD[mood];}
+   else if(isTextNode(n,'내일의 조언'))props.style={...style,color:tone.label};
+   else if(isTextNode(n,'최대한 피하세요!'))props.style={...style,color:tone.title};
+  }
   if(n.tag==='div'&&n.children.some(c=>typeof c!=='string'&&c.attrs['data-slot']==='messages'))props['data-chat-layout']='true';
   if(style.justifyContent==='space-between'&&style.alignItems==='baseline')props['data-result-row']='true';
   if(n.attrs.role==='dialog')props['data-warning-dialog']='true';
