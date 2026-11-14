@@ -7,6 +7,8 @@ import { initialDemo, playDemoTurn } from "./survival-demo";
 import { getForecast } from "@/lib/api";
 import type { ForecastResponse } from "@/types/forecast";
 import "./v7.css";
+import AnalysisLoading from "./analysis-loading";
+import { runAnalysis, waitForMotion, type AnalysisStage } from "./analysis-progress";
 import Image from "next/image";
 import lgLogo from "./assets/team-logos/lg_sym.png";
 import doosanLogo from "./assets/team-logos/doosan_sym.png";
@@ -35,11 +37,32 @@ export default function V7App(){
  const [team,setTeam]=useState('LG');const [name,setName]=useState('과장님');const [relation,setRelation]=useState('boss');
  const [mood,setMood]=useState<MoodKey>('vbad');const [report,setReport]=useState<ForecastResponse|null>(null);const [error,setError]=useState('');
  const [game,setGame]=useState(initialDemo);const [messages,setMessages]=useState([{role:'assistant',text:initialDemo.last.reply}]);const [input,setInput]=useState('');
+ const [analysisStage,setAnalysisStage]=useState<AnalysisStage>(0);const analysisController=useRef<AbortController|null>(null);
  const [balls,setBalls]=useState(0);const request=useRef(0);const log=useRef<HTMLDivElement>(null);
  useEffect(()=>{if(log.current)log.current.scrollTop=log.current.scrollHeight;},[messages]);
  function go(next:Screen){setScreen(next);window.scrollTo({top:0});}
  function startChat(){setGame(initialDemo);setMessages([{role:'assistant',text:relation==='friend'?'어제 경기 봤어? 오늘은 야구 얘기 하지 말자…':initialDemo.last.reply}]);setInput('');setBalls(0);go('chat');}
- async function analyze(){if(!name.trim())return;const id=++request.current;setError('');setReport(null);go('loading');try{const result=await getForecast({bossTitle:name.trim(),team,player:'팀 전체',favoriteMenus:['국밥']});if(id!==request.current)return;setReport(result);setMood('vbad');go('result');}catch(e){if(id!==request.current)return;setError(e instanceof Error?e.message:'자료를 불러오지 못했어요. 다시 시도해주세요.');go('main');}}
+ function cancelAnalysis(){analysisController.current?.abort();request.current++;go('main');}
+ async function analyze(){
+  if(!name.trim())return;
+  analysisController.current?.abort();
+  const controller=new AbortController();analysisController.current=controller;
+  const id=++request.current;setError('');setReport(null);setAnalysisStage(0);go('loading');
+  try{
+   await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
+   controller.signal.throwIfAborted();
+   const result=await runAnalysis(
+    ()=>getForecast({bossTitle:name.trim(),team,player:'팀 전체',favoriteMenus:['국밥']},controller.signal),
+    stage=>{if(id===request.current)setAnalysisStage(stage);},
+    ()=>waitForMotion(controller.signal),controller.signal);
+   if(id!==request.current)return;
+   setReport(result);setMood('vbad');go('result');
+  }catch(e){
+   if(id!==request.current||controller.signal.aborted)return;
+   setError(e instanceof Error?e.message:'자료를 불러오지 못했어요. 다시 시도해주세요.');go('main');
+  }
+ }
+
  function navigate(href:string){if(href==='Main.dc.html'){request.current++;go('main');}else if(href==='WebLoading.dc.html'){void analyze();}else if(href==='WebResult.dc.html'){if(report)go('result');else void analyze();}else if(href==='SimChat.dc.html')startChat();else if(href==='SimWarning.dc.html')go('warning');}
  function send(){const value=input.trim();if(!value||game.ended)return;const next=playDemoTurn(game,value);setGame(next);setMessages(m=>[...m,{role:'user',text:value},{role:'assistant',text:next.last.reply}]);setInput('');if(!next.last.out)setBalls(b=>(b+1)%4);if(next.ended)go('warning');}
  function text(s:string){return s.replaceAll('야친자 기분 기상청','야친자로부터 살아남기').replaceAll('김 과장님','__NAME__').replaceAll('과장님','__NAME__').replaceAll('__NAME__',name).replaceAll('직장 상사 · 존댓말',relation==='friend'?'친구 · 반말':'직장 상사 · 존댓말').replaceAll('LG',team).replaceAll('친구과','친구와').replaceAll('[YYYY-MM-DD]',report?.performance.asOf??'샘플').replaceAll('[N]점','예시 3.2점').replaceAll('경기 기록과 AI로 만든 재미용 예보예요','샘플 경기 기반 체험 결과예요').replaceAll('예보는 경기 기록과 AI로 만든 재미용 결과예요.','현재는 샘플 경기와 체험 대화로 동작해요.').replaceAll('마지막 스트라이크: "올해 가을야구는 못 가겠죠?"',`마지막 스트라이크: “${messages.filter(m=>m.role==='user').at(-1)?.text??''}”`);}
@@ -70,5 +93,5 @@ export default function V7App(){
   if(n.tag==='input')return createElement(n.tag,props);
   return createElement(n.tag,props,...n.children.map((c,i)=>render(c,`${key}.${i}`,v)));
  }
- return <div className="v7-root" data-screen={screen}><div className="v7-notice">가상 상대 · 샘플 경기로 하는 대화 체험입니다. 실제 메시지는 보내지 않아요.</div>{error&&<p className="v7-error" role="alert">{error}</p>}{render(design[screen] as TemplateNode,'root',values)}</div>;
+ return <div className="v7-root" data-screen={screen}><div className="v7-notice">가상 상대 · 샘플 경기로 하는 대화 체험입니다. 실제 메시지는 보내지 않아요.</div>{error&&<p className="v7-error" role="alert">{error}</p>}{screen==='loading'?<AnalysisLoading stage={analysisStage} team={team} logo={teamLogos[team]} onCancel={cancelAnalysis}/>:render(design[screen] as TemplateNode,'root',values)}</div>;
 }
