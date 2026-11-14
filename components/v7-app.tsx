@@ -123,6 +123,7 @@ const request=useRef(0);const log=useRef<HTMLDivElement>(null);
   if(n.tag==='section'&&n.attrs['aria-label']?.endsWith('과 대화')){props['aria-label']=`${name} 대화`;props['data-chat-section']='true';}
   if(n.attrs.role==='dialog')props['data-warning-dialog']='true';
   if(n.tag==='a'&&n.attrs.href==='SimWarning.dc.html')return null;
+  if(screen==='chat'&&n.tag==='a'&&n.attrs.href==='WebResult.dc.html')return <div key={key} className='chat-header-actions'>{createElement(n.tag,props,'분석 결과로 돌아가기')}<button type='button' disabled={pending} onClick={()=>{setMessages([]);setInput('');setTips(null);setChatCount({...CHAT_START_COUNT});setError('');go(report?'result':'main');}}>대화 종료</button></div>;
   if(screen==='main'&&n.tag==='div'&&String(style.gridTemplateColumns).includes('auto-fill'))props.className='team-picker-grid';
   if(n.attrs['data-team']){const label=n.attrs['data-team'];return createElement('button',props,<Image key="logo" src={teamLogos[label]} alt="" width={36} height={36} sizes="36px" style={{width:36,height:36,objectFit:'contain',flexShrink:0}}/>,label);}
   if(n.tag==='span'&&style.background==='#C30452')return <Image key={key} src={teamLogos[team]} alt={`${team} 로고`} width={24} height={24} sizes="24px" style={{width:24,height:24,objectFit:'contain'}}/>;
