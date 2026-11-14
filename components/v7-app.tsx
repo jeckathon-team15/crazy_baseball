@@ -36,6 +36,15 @@ function lookup(key:string,v:Values):unknown{return key.trim().split('.').reduce
 function interpolate(s:string,v:Values):unknown{const exact=s.match(/^\{\{\s*([^}]+?)\s*\}\}$/);return exact?lookup(exact[1],v):s.replace(/\{\{\s*([^}]+?)\s*\}\}/g,(_,key)=>String(lookup(key,v)??''));}
 function inlineStyle(raw:string,v:Values):CSSProperties{return Object.fromEntries(raw.split(';').filter(x=>x.includes(':')).map(s=>{const i=s.indexOf(':');return[s.slice(0,i).trim().replace(/-([a-z])/g,(_,x)=>x.toUpperCase()),interpolate(s.slice(i+1).trim(),v)];})) as CSSProperties;}
 
+type AdviceTone={bg:string;label:string;title:string};
+const ADVICE_TONES:Record<'green'|'yellow'|'red',AdviceTone>={
+ green:{bg:'#E8F7EC',label:'#1E7B34',title:'#0F5A22'},
+ yellow:{bg:'#FFF7DB',label:'#A05A00',title:'#7A4300'},
+ red:{bg:'#FFF2F3',label:'#D70015',title:'#8A0010'},
+};
+const ADVICE_TONE_BY_MOOD:Record<MoodKey,keyof typeof ADVICE_TONES>={vgood:'green',good:'green',normal:'yellow',bad:'red',vbad:'red'};
+const isTextNode=(n:TemplateNode,text:string)=>typeof n!=='string'&&n.children[0]===text;
+
 export default function V7App(){
  const [screen,setScreen]=useState<Screen>('main');
  const [date,setDate]=useState('2026-10-01');const dateInput=useRef<HTMLInputElement>(null);const [dataMode,setDataMode]=useState<'live'|'sample'>('live');const [daily,setDaily]=useState<DailyMood|null>(null);
@@ -102,6 +111,12 @@ const request=useRef(0);const log=useRef<HTMLDivElement>(null);
   if(n.attrs.id==='chat-input'){props.value=input;props.maxLength=160;props.disabled=chatCount.outs>=3||pending;props.onChange=(e:{target:{value:string}})=>setInput(e.target.value);props.onKeyDown=(e:{key:string;nativeEvent:{isComposing:boolean}})=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing)send();};}
   if(n.attrs['data-action']==='send'){props.onClick=send;props.disabled=!input.trim()||chatCount.outs>=3||pending;}
   if(style.background==='#C30452')props.style={...style,background:selected.color};
+  if(screen==='result'){
+   const tone=ADVICE_TONES[ADVICE_TONE_BY_MOOD[mood]];
+   if(n.tag==='section'&&n.children.some(c=>isTextNode(c,'내일의 조언'))){props.style={...style,background:tone.bg,transition:'background .3s'};props['data-advice-tone']=ADVICE_TONE_BY_MOOD[mood];}
+   else if(isTextNode(n,'내일의 조언'))props.style={...style,color:tone.label};
+   else if(isTextNode(n,'최대한 피하세요!'))props.style={...style,color:tone.title};
+  }
   if(n.tag==='div'&&n.children.some(c=>typeof c!=='string'&&c.attrs['data-slot']==='messages'))props['data-chat-layout']='true';
   if(style.justifyContent==='space-between'&&style.alignItems==='baseline')props['data-result-row']='true';
   if(n.tag==='section'&&n.attrs['aria-label']?.endsWith('과 대화')){props['aria-label']=`${name} 대화`;props['data-chat-section']='true';}
