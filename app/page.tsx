@@ -1,5 +1,5 @@
-import SurvivalApp from "@/components/survival-app";
+import V7App from "@/components/v7-app";
 
 export default function Home() {
-  return <SurvivalApp />;
+  return <V7App />;
 }
