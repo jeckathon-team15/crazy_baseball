@@ -5,7 +5,8 @@ import type { ForecastResponse } from "@/types/forecast";
 /** 매우 좋음 사례: 팀 연승 + 선수 맹타 */
 export const MOCK_SUNNY = {
   input: {
-    bossTitle: "과장님",
+    relation: "boss",
+    displayName: "김 과장님",
     team: "LG 트윈스",
     player: "오지환",
     favoriteMenus: ["삼겹살", "김치찌개", "냉면"],
@@ -49,7 +50,8 @@ export const MOCK_SUNNY = {
 /** 매우 안 좋음 사례: 팀 연패 + 투수 난조. 긴 선수 이름, 메뉴 1개 */
 export const MOCK_THUNDER = {
   input: {
-    bossTitle: "팀장님",
+    relation: "boss",
+    displayName: "박 팀장님",
     team: "한화 이글스",
     player: "알렉산더 크리스토퍼 몽고메리-라미레스",
     favoriteMenus: ["순댓국"],

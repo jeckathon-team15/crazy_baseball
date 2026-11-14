@@ -11,7 +11,7 @@ test("does not invent an emotion or score when no game exists", () => {
 test("judge demo always shows the angriest sample without a provider",()=>{
  const report=extremeDemo("가상 팀장님");
  assert.equal(report.performance.source,"sample");
- assert.equal(report.input.bossTitle,"가상 팀장님");
+ assert.equal(report.input.displayName,"가상 팀장님");
  assert.equal(moodKey(report.forecast.mood),"vbad");
  assert.match(report.forecast.reason,/테스트 시나리오/);
 });

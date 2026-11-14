@@ -3,8 +3,9 @@
 import { createElement, Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import design from "./v7-design.json";
 import { MOODS, ORDER, type MoodKey } from "./v7-moods";
-import { initialDemo, playDemoTurn } from "./survival-demo";
-import { getForecast, getDailyMood } from "@/lib/api";
+import { CHAT_START_COUNT, DISPLAY_NAME_RANGE } from "@/lib/config";
+import type { ChatMessage, Count, Relation, Tip } from "@/types/chat";
+import { getForecast, getDailyMood, sendChat } from "@/lib/api";
 import NoGame from "./no-game";
 import { dailyAsReport, moodKey, extremeDemo } from "./daily-experience";
 import type { DailyMood } from "@/lib/analysis/daily-mood";
@@ -38,14 +39,15 @@ function inlineStyle(raw:string,v:Values):CSSProperties{return Object.fromEntrie
 export default function V7App(){
  const [screen,setScreen]=useState<Screen>('main');
  const [date,setDate]=useState('2026-10-01');const dateInput=useRef<HTMLInputElement>(null);const [dataMode,setDataMode]=useState<'live'|'sample'>('live');const [daily,setDaily]=useState<DailyMood|null>(null);
- const [team,setTeam]=useState('LG');const [name,setName]=useState('과장님');const [relation,setRelation]=useState('boss');
+ const [team,setTeam]=useState('LG');const [name,setName]=useState('과장님');const [relation,setRelation]=useState<Relation>('boss');
  const [mood,setMood]=useState<MoodKey>('vbad');const [report,setReport]=useState<ForecastResponse|null>(null);const [error,setError]=useState('');
- const [game,setGame]=useState(initialDemo);const [messages,setMessages]=useState([{role:'assistant',text:initialDemo.last.reply}]);const [input,setInput]=useState('');
+ const [messages,setMessages]=useState<ChatMessage[]>([]);const [input,setInput]=useState('');const [chatCount,setChatCount]=useState<Count>({...CHAT_START_COUNT});const [pending,setPending]=useState(false);const [tips,setTips]=useState<Tip[]|null>(null);
  const [analysisStage,setAnalysisStage]=useState<AnalysisStage>(0);const analysisController=useRef<AbortController|null>(null);
- const [balls,setBalls]=useState(0);const request=useRef(0);const log=useRef<HTMLDivElement>(null);
+const request=useRef(0);const log=useRef<HTMLDivElement>(null);
  useEffect(()=>{if(log.current)log.current.scrollTop=log.current.scrollHeight;},[messages]);
  function go(next:Screen){setScreen(next);window.scrollTo({top:0});}
- function startChat(){setGame(initialDemo);setMessages([{role:'assistant',text:relation==='friend'?'어제 경기 봤어? 오늘은 야구 얘기 하지 말자…':initialDemo.last.reply}]);setInput('');setBalls(0);go('chat');}
+ function startChat(){setMessages([{role:'partner',text:relation==='friend'?'야, 그 경기 봤어? 오늘은 말 좀 조심해…':'점심시간이네요. 그 경기 때문에 아직 마음이 좀 복잡해요.'}]);setChatCount({...CHAT_START_COUNT});setTips(null);setInput('');setError('');go('chat');}
+
  function cancelAnalysis(){analysisController.current?.abort();request.current++;go('main');}
  async function analyze(testMode=false){
   const selectedDate=testMode?'2026-10-01':dateInput.current?.value||date;if(!name.trim()||!selectedDate)return;setDate(selectedDate);if(testMode){setDataMode('sample');setTeam('한화');setDate('2026-10-01');}
@@ -56,7 +58,7 @@ export default function V7App(){
    await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
    controller.signal.throwIfAborted();
    const result=await runAnalysis(
-    async()=>{if(testMode)return {daily:null,report:extremeDemo(name.trim())};if(dataMode==='live'){const daily=await getDailyMood({team,date:selectedDate},controller.signal);return {daily,report:dailyAsReport(daily,name.trim())};}return {daily:null,report:await getForecast({bossTitle:name.trim(),team,player:'팀 전체',favoriteMenus:['국밥']},controller.signal)};},
+    async()=>{if(testMode)return {daily:null,report:extremeDemo(name.trim(),relation)};if(dataMode==='live'){const daily=await getDailyMood({team,date:selectedDate},controller.signal);return {daily,report:dailyAsReport(daily,name.trim(),relation)};}return {daily:null,report:await getForecast({relation,displayName:name.trim(),team,player:'팀 전체',favoriteMenus:['국밥']},controller.signal)};},
     stage=>{if(id===request.current)setAnalysisStage(stage);},
     ()=>waitForMotion(controller.signal),controller.signal);
    if(id!==request.current)return;
@@ -68,11 +70,20 @@ export default function V7App(){
  }
 
  function navigate(href:string){if(href==='Main.dc.html'){request.current++;go('main');}else if(href==='WebLoading.dc.html'){void analyze();}else if(href==='WebResult.dc.html'){if(report)go('result');else void analyze();}else if(href==='SimChat.dc.html')startChat();else if(href==='SimWarning.dc.html')go('warning');}
- function send(){const value=input.trim();if(!value||game.ended)return;const next=playDemoTurn(game,value);setGame(next);setMessages(m=>[...m,{role:'user',text:value},{role:'assistant',text:next.last.reply}]);setInput('');if(!next.last.out)setBalls(b=>(b+1)%4);if(next.ended)go('warning');}
- function text(s:string){return s.replaceAll('야친자 기분 기상청','야친자로부터 살아남기').replaceAll('새 예보 만들기','대화 상대 설정').replaceAll('예보를 만드는 데만','대화 상황을 만드는 데만').replaceAll('다시 예보하기','다른 경기로 다시 하기').replaceAll('예보로 돌아가기','분석 결과로 돌아가기').replaceAll('내일 기분','경기 후 팬심').replaceAll('내일의 조언','첫마디 생존 팁').replaceAll('김 과장님','__NAME__').replaceAll('과장님','__NAME__').replaceAll('__NAME__',name).replaceAll('직장 상사 · 존댓말',relation==='friend'?'친구 · 반말':'직장 상사 · 존댓말').replaceAll('LG',team).replaceAll('친구과','친구와').replaceAll('[YYYY-MM-DD]',report?.performance.asOf??date).replaceAll('[N]점','예시 3.2점').replaceAll('경기 기록과 AI로 만든 재미용 예보예요',dataMode==='live'?'선택한 날짜의 경기 기록을 바탕으로 한 재미용 결과예요':'샘플 경기로 만든 체험 결과예요').replaceAll('예보는 경기 기록과 AI로 만든 재미용 결과예요.','실제 사람의 기분을 알 수는 없지만, 첫마디는 연습할 수 있어요.').replaceAll('마지막 스트라이크: "올해 가을야구는 못 가겠죠?"',`마지막 스트라이크: “${messages.filter(m=>m.role==='user').at(-1)?.text??''}”`);}
+ async function send(){
+  const value=input.trim();if(!value||chatCount.outs>=3||pending)return;
+  const before=messages;const next:ChatMessage[]=[...messages,{role:'user',text:value}];setMessages(next);setInput('');setError('');setPending(true);
+  try{const result=await sendChat({profile:{relation,displayName:name.trim(),team,mood:MOODS[mood].label,moodReason:report?.forecast.reason??MOODS[mood].sentence},messages:next,count:chatCount});setMessages([...next,{role:'partner',text:result.reply}]);setChatCount(result.count);if(result.ended){setTips(result.tips??null);go('warning');}}
+  catch(e){setMessages(before);setInput(value);setError(e instanceof Error?e.message:'답장을 받지 못했어요. 다시 보내주세요.');}finally{setPending(false);}
+ }
+
+ function text(s:string){if(screen==='warning'&&s.trim()==='……')return messages.filter(m=>m.role==='partner').at(-1)?.text??'…';const templateTips=[['진 경기 얘기는 먼저 꺼내지 않기','결과나 선수 실수보다는 상대가 먼저 꺼낼 때까지 기다려요'],['다음 경기에 대한 기대로 이야기하기','지난 경기 평가 대신 앞으로 잘될 거라는 쪽으로 말해요'],['좋아하는 다른 주제로 자연스럽게 돌리기','점심 메뉴나 주말 계획처럼 기분 좋아질 화제를 꺼내요']];for(let i=0;i<templateTips.length;i++){if(tips?.[i]&&s.trim()===templateTips[i][0])return tips[i].title;if(tips?.[i]&&s.trim()===templateTips[i][1])return tips[i].desc;}return s.replaceAll('야친자 기분 기상청','야친자 경보기').replaceAll('야친자로부터 살아남기','야친자 경보기').replaceAll('새 예보 만들기','새 경보 만들기').replaceAll('예보를 만드는 데만','대화 상황을 만드는 데만').replaceAll('다시 예보하기','다른 경기로 다시 하기').replaceAll('예보로 돌아가기','분석 결과로 돌아가기').replaceAll('내일 기분','경기 후 팬심').replaceAll('내일의 조언','첫마디 생존 팁').replaceAll('김 과장님','__NAME__').replaceAll('과장님','__NAME__').replaceAll('__NAME__',name).replaceAll('직장 상사 · 존댓말',relation==='friend'?'친구 · 반말':'직장 상사 · 존댓말').replaceAll('LG',team).replaceAll('친구과','친구와').replaceAll('[YYYY-MM-DD]',report?.performance.asOf??date).replaceAll('[N]점','예시 3.2점').replaceAll('경기 기록과 AI로 만든 재미용 예보예요',dataMode==='live'?'선택한 날짜의 경기 기록을 바탕으로 한 재미용 결과예요':'샘플 경기로 만든 체험 결과예요').replaceAll('예보는 경기 기록과 AI로 만든 재미용 결과예요.','실제 사람의 기분을 알 수는 없지만, 첫마디는 연습할 수 있어요.').replaceAll('마지막 스트라이크: "올해 가을야구는 못 가겠죠?"',`마지막 스트라이크: “${messages.filter(m=>m.role==='user').at(-1)?.text??''}”`);}
  const selected=teams.find(t=>t.name===team)!;const m=MOODS[mood];
  const values:Values={sentence:report?.forecast.reason??text(m.sentence),faceFill:m.face,blush:m.blush,eyeRy:m.eyeRy,browW:m.browW,browL:m.browL,browR:m.browR,xAnim:m.x,yAnim:m.y,sAnim:m.s,rAnim:m.r,ariaLabel:`기분이 ${m.label}인 야구공 캐릭터`,isVgood:mood==='vgood',isGood:mood==='good',isNormal:mood==='normal',isBad:mood==='bad',isVbad:mood==='vbad',openEyes:mood!=='vgood',moods:ORDER.map(k=>({label:MOODS[k].label,pressed:String(k===mood),bg:k===mood?'#1C1C1E':'#FFFFFF',fg:k===mood?'#FFFFFF':'#1C1C1E',border:k===mood?'#1C1C1E':'#D1D1D6',pick:()=>setMood(k)}))};
- function count(){return <aside className="v7-count" aria-label={`볼 ${balls}, 스트라이크 ${game.outs}, 아웃 ${game.outs}`}><div className="v7-board">{[{label:'B',num:balls,total:3,color:'#34C759'},{label:'S',num:game.outs,total:2,color:'#FFCC00'},{label:'O',num:game.outs,total:2,color:'#FF3B30'}].map(row=><div className="v7-countrow" key={row.label}><b>{row.label}</b><div className="v7-lights">{Array.from({length:row.total},(_,i)=><i key={i} style={{background:i<row.num?row.color:undefined}}/>)}</div></div>)}</div><strong>{game.outs===0?'플레이볼!':game.outs===1?'원아웃!':game.outs===2?'투아웃!':'삼진 아웃!'}</strong><small>무난한 말은 볼<br/>위험한 말은 스트라이크<br/>말실수 세 번이면 대화 끝</small></aside>;}
+ function count(){
+  const status=chatCount.outs>=3?'삼진 아웃!':chatCount.strikes===2?'투 스트라이크!':chatCount.strikes===1?'원 스트라이크!':'플레이볼!';
+  return <aside className="v7-count" aria-label={`볼 ${chatCount.balls}, 스트라이크 ${chatCount.strikes}, 아웃 ${chatCount.outs}`}><div className="v7-board">{[{label:'B',num:chatCount.balls,total:3,color:'#34C759'},{label:'S',num:chatCount.strikes,total:2,color:'#FFCC00'},{label:'O',num:chatCount.outs,total:2,color:'#FF3B30'}].map(row=><div className="v7-countrow" key={row.label}><b>{row.label}</b><div className="v7-lights">{Array.from({length:row.total},(_,i)=><i key={i} style={{background:i<row.num?row.color:undefined}}/>)}</div></div>)}</div><strong>{status}</strong><small>무난한 말은 볼<br/>위험한 말은 스트라이크<br/>3아웃이면 대화 끝</small></aside>;
+ }
  function render(n:TemplateNode,key:string,v:Values):ReactNode{
   if(typeof n==='string')return text(String(interpolate(n,v)??''));
   if(n.attrs['aria-label']==='기분 미리보기')return null;
@@ -80,19 +91,20 @@ export default function V7App(){
   if(n.tag==='section'&&n.children.some(c=>typeof c==='object'&&c.children.includes('내일의 조언'))){return <section key={key} className="result-tips-card"><span>첫마디 생존 팁</span><h2>{mood==='vbad'||mood==='bad'?'오늘은 한마디 더 조심.':'말문을 가볍게 열어보세요.'}</h2><ul>{report?.forecast.tips.map(tip=><li key={tip}>{tip}</li>)}</ul></section>;}
   if(n.tag==='sc-if')return interpolate(n.attrs.value,v)?<Fragment key={key}>{n.children.map((c,i)=>render(c,`${key}.${i}`,v))}</Fragment>:null;
   if(n.tag==='sc-for'){const list=interpolate(n.attrs.list,v) as Values[];return <Fragment key={key}>{list.map((item,j)=>n.children.map((c,i)=>render(c,`${key}.${j}.${i}`,{...v,[n.attrs.as]:item})))}</Fragment>;}
-  if(n.attrs['data-slot']==='messages')return <div key={key} className="v7-messages" ref={log} role="log" aria-live="polite">{messages.map((item,i)=><div className={`v7-message ${item.role}`} key={i}>{item.role==='assistant'&&<span className="v7-avatar">{name[0]}</span>}<p>{item.text}</p></div>)}</div>;
+  if(n.attrs['data-slot']==='messages')return <div key={key} className="v7-messages" ref={log} role="log" aria-live="polite">{messages.map((item,i)=><div className={`v7-message ${item.role==='user'?'user':'assistant'}`} key={i}>{item.role==='partner'&&<span className="v7-avatar">{name[0]}</span>}<p>{item.text}</p></div>)}{pending&&<div className='v7-message assistant' aria-label='답장 작성 중'><p>…</p></div>}</div>;
   if(n.attrs['data-slot']==='count')return <Fragment key={key}>{count()}</Fragment>;
   const props:Record<string,unknown>={key};for(const [a,b]of Object.entries(n.attrs)){if(a.startsWith('hint-'))continue;if(a==='style')props.style=inlineStyle(b,v);else if(a.toLowerCase()==='onclick')props.onClick=interpolate(b,v);else props[attributeNames[a]??a]=interpolate(b,v);}
   const style=(props.style??{}) as CSSProperties;if(key==='root'&&screen==='main')props.className='stadium-content';
   if(n.attrs.href){props.onClick=(e:{preventDefault:()=>void})=>{e.preventDefault();navigate(n.attrs.href);};if(n.attrs.href==='WebLoading.dc.html'&&(!name.trim()||!date)){props['aria-disabled']=true;props.onClick=(e:{preventDefault:()=>void})=>e.preventDefault();}}
-  if(n.attrs['data-relation']){const on=relation===n.attrs['data-relation'];props['aria-checked']=on;props.onClick=()=>setRelation(n.attrs['data-relation']);props.style={...style,background:on?'#FFFFFF':'transparent',boxShadow:on?'0 1px 3px #0000001f':'none',fontWeight:on?700:500};}
+  if(n.attrs['data-relation']){const on=relation===n.attrs['data-relation'];props['aria-checked']=on;props.onClick=()=>setRelation(n.attrs['data-relation'] as Relation);props.style={...style,background:on?'#FFFFFF':'transparent',boxShadow:on?'0 1px 3px #0000001f':'none',fontWeight:on?700:500};}
   if(n.attrs['data-team']){const on=team===n.attrs['data-team'];props['aria-pressed']=on;props.onClick=()=>setTeam(n.attrs['data-team']);props.style={...style,border:on?'2px solid #0071E3':'1px solid #E5E5EA'};}
-  if(n.attrs.id==='boss-name'){props.value=name;props.maxLength=20;props.onChange=(e:{target:{value:string}})=>setName(e.target.value);}
-  if(n.attrs.id==='chat-input'){props.value=input;props.maxLength=160;props.disabled=game.ended;props.onChange=(e:{target:{value:string}})=>setInput(e.target.value);props.onKeyDown=(e:{key:string;nativeEvent:{isComposing:boolean}})=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing)send();};}
-  if(n.attrs['data-action']==='send'){props.onClick=send;props.disabled=!input.trim()||game.ended;}
+  if(n.attrs.id==='boss-name'){props.value=name;props.maxLength=DISPLAY_NAME_RANGE.max;props.onChange=(e:{target:{value:string}})=>setName(e.target.value);}
+  if(n.attrs.id==='chat-input'){props.value=input;props.maxLength=160;props.disabled=chatCount.outs>=3||pending;props.onChange=(e:{target:{value:string}})=>setInput(e.target.value);props.onKeyDown=(e:{key:string;nativeEvent:{isComposing:boolean}})=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing)send();};}
+  if(n.attrs['data-action']==='send'){props.onClick=send;props.disabled=!input.trim()||chatCount.outs>=3||pending;}
   if(style.background==='#C30452')props.style={...style,background:selected.color};
   if(n.tag==='div'&&n.children.some(c=>typeof c!=='string'&&c.attrs['data-slot']==='messages'))props['data-chat-layout']='true';
   if(style.justifyContent==='space-between'&&style.alignItems==='baseline')props['data-result-row']='true';
+  if(n.tag==='section'&&n.attrs['aria-label']?.endsWith('과 대화')){props['aria-label']=`${name} 대화`;props['data-chat-section']='true';}
   if(n.attrs.role==='dialog')props['data-warning-dialog']='true';
   if(n.tag==='a'&&n.attrs.href==='SimWarning.dc.html')return null;
   if(screen==='main'&&n.tag==='div'&&String(style.gridTemplateColumns).includes('auto-fill'))props.className='team-picker-grid';

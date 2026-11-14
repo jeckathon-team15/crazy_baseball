@@ -14,7 +14,7 @@ function request(body: unknown): Request {
 }
 
 test("forecast API uses the submitted input and marks sample data", async () => {
-  const input = { bossTitle: "부장님", team: "한화", player: "테스트 선수", favoriteMenus: ["국밥"] };
+  const input = { relation: "boss", displayName: "부장님", team: "한화", player: "테스트 선수", favoriteMenus: ["국밥"] };
   const response = await POST(request(input));
   const data = await response.json();
   assert.equal(response.status, 200);
@@ -27,18 +27,23 @@ test("forecast API uses the submitted input and marks sample data", async () => 
   assert.doesNotMatch(data.forecast.headline, /날씨/);
 });
 
-test("forecast API reports unavailable teams without returning another team's sample", async () => {
+test("forecast API answers unavailable teams with a neutral fallback, not another team's sample", async () => {
   const response = await POST(request({
-    bossTitle: "팀장님", team: "두산", player: "선수", favoriteMenus: ["국밥"],
+    relation: "boss", displayName: "팀장님", team: "두산", player: "선수", favoriteMenus: ["국밥"],
   }));
-  assert.equal(response.status, 404);
+  assert.equal(response.status, 200);
   const data = await response.json();
-  assert.equal(typeof data.error, "string");
+  assert.equal(data.performance.team, "두산 베어스");
+  assert.deepEqual(data.performance.teamGames, []);
+  assert.equal(data.forecast.mood, "보통");
+  assert.equal(data.forecast.fallback, true);
+  assert.equal(data.prediction.method, "unavailable");
+  assert.match(data.forecast.headline, /팀장님/);
 });
 
 test("forecast API rejects an invalid request", async () => {
   const response = await POST(request({
-    bossTitle: "", team: "한화", player: "선수", favoriteMenus: ["국밥"],
+    relation: "boss", displayName: "", team: "한화", player: "선수", favoriteMenus: ["국밥"],
   }));
   assert.equal(response.status, 400);
 });
@@ -57,7 +62,7 @@ test("uses a matching trained model and reports its prediction", async () => {
   }));
   try {
     const response = await POST(request({
-      bossTitle: "팀장님", team: "한화", player: "선수", favoriteMenus: ["국밥"],
+      relation: "boss", displayName: "팀장님", team: "한화", player: "선수", favoriteMenus: ["국밥"],
     }));
     const body = await response.json();
     assert.equal(response.status, 200);
