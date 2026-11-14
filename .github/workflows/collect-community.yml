@@ -1,0 +1,82 @@
+name: Collect community sentiment
+
+"on":
+  schedule:
+    - cron: "0 0 * * *" # 09:00 Asia/Seoul; scheduled runs can be delayed
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: community-snapshot-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    if: >-
+      ${{ github.ref_type == 'branch' && vars.COMMUNITY_COLLECTION_AUTHORIZED == 'true' &&
+          vars.COMMUNITY_BOARD_URL != '' &&
+          (vars.COMMUNITY_GAMES_URL != '' || vars.COMMUNITY_GAMES_FILE != '') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      COMMUNITY_BOARD_URL: ${{ vars.COMMUNITY_BOARD_URL }}
+      COMMUNITY_GAMES_URL: ${{ vars.COMMUNITY_GAMES_URL }}
+      COMMUNITY_GAMES_FILE: ${{ vars.COMMUNITY_GAMES_FILE }}
+      COMMUNITY_SOURCE: ${{ vars.COMMUNITY_SOURCE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: npm ci
+      - name: Load games and collect authorized posts
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "$COMMUNITY_GAMES_URL" ]]; then
+            curl --proto '=https' --fail --silent --show-error --max-time 30 --max-filesize 2097152 \
+              "$COMMUNITY_GAMES_URL" --output "$RUNNER_TEMP/games.csv"
+          else
+            cp -- "$COMMUNITY_GAMES_FILE" "$RUNNER_TEMP/games.csv"
+          fi
+          date -u '+%Y-%m-%dT%H:%M:%SZ' > "$RUNNER_TEMP/as-of.txt"
+          python3 scripts/collect_community.py \
+            --board-url "$COMMUNITY_BOARD_URL" --authorized \
+            --games "$RUNNER_TEMP/games.csv" --output "$RUNNER_TEMP/posts.csv" \
+            --source "${COMMUNITY_SOURCE:-community}" --pages 3 --delay-seconds 2 \
+            --as-of "$(cat "$RUNNER_TEMP/as-of.txt")"
+      - name: Classify posts and build snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/analyze_team_posts.py --input "$RUNNER_TEMP/posts.csv" \
+            --labels-csv "$RUNNER_TEMP/labels.csv" --output "$RUNNER_TEMP/summary.json" --minimum-posts 10
+          node --conditions=react-server --import tsx scripts/build-forecast-snapshot.ts \
+            --games "$RUNNER_TEMP/games.csv" --posts "$RUNNER_TEMP/posts.csv" \
+            --labels "$RUNNER_TEMP/labels.csv" --output "$RUNNER_TEMP/snapshot.json" \
+            --teams 한화,삼성,KIA,LG,두산,롯데,SSG,NC,KT,키움 --source live \
+            --as-of "$(cat "$RUNNER_TEMP/as-of.txt")" \
+            --recent-games 5 --window-hours 12 --max-posts 50 --minimum-posts 10 --max-age-days 7 \
+            --win-points 60 --run-difference-points 4 --streak-points 5 \
+            --run-difference-limit 5 --streak-limit 4 --fan-weight 0.2
+          node -e 'const s = require(process.argv[1]); if (s.source !== "live" || !s.teams.some(t => t.sentiment.validCount >= 10 && t.sentiment.score !== null && Date.parse(t.validUntil) > Date.parse(s.asOf))) { console.error("No current usable team sentiment; existing snapshot retained."); process.exit(1); }' "$RUNNER_TEMP/snapshot.json"
+          cp -- "$RUNNER_TEMP/snapshot.json" lib/analysis/data/forecast-snapshot.json
+      - name: Commit aggregate snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- lib/analysis/data/forecast-snapshot.json
+          if git diff --cached --quiet; then
+            echo "No aggregate change."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update community sentiment snapshot"
+          git push origin "HEAD:$GITHUB_REF_NAME"

@@ -1,0 +1,21 @@
+source,postId,relevant,sentiment,topic
+sample,h1,true,negative,불펜
+sample,h2,true,negative,타격
+sample,h3,true,negative,수비
+sample,h4,true,negative,감독 운용
+sample,h5,true,negative,기타
+sample,h6,true,negative,타격
+sample,h7,true,negative,불펜
+sample,h8,true,negative,타격
+sample,h9,true,positive,선발
+sample,h10,true,positive,수비
+sample,s1,true,positive,기타
+sample,s2,true,positive,선발
+sample,s3,true,positive,타격
+sample,s4,true,positive,불펜
+sample,s5,true,positive,수비
+sample,s6,true,positive,기타
+sample,s7,true,positive,타격
+sample,s8,true,positive,감독 운용
+sample,s9,true,neutral,기타
+sample,s10,true,neutral,기타
