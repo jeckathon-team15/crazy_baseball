@@ -7,6 +7,19 @@ import { initialDemo, playDemoTurn } from "./survival-demo";
 import { getForecast } from "@/lib/api";
 import type { ForecastResponse } from "@/types/forecast";
 import "./v7.css";
+import Image from "next/image";
+import lgLogo from "./assets/team-logos/lg_sym.png";
+import doosanLogo from "./assets/team-logos/doosan_sym.png";
+import kiaLogo from "./assets/team-logos/kia_sym.png";
+import samsungLogo from "./assets/team-logos/samsung_sym.png";
+import lotteLogo from "./assets/team-logos/lotte_sym.png";
+import hanwhaLogo from "./assets/team-logos/hanwha_sym.png";
+import ssgLogo from "./assets/team-logos/ssg_sym.png";
+import ncLogo from "./assets/team-logos/nc_sym.png";
+import ktLogo from "./assets/team-logos/img.png";
+import kiwoomLogo from "./assets/team-logos/kiwoom_sym.png";
+
+const teamLogos:Record<string,typeof lgLogo>={LG:lgLogo,두산:doosanLogo,KIA:kiaLogo,삼성:samsungLogo,롯데:lotteLogo,한화:hanwhaLogo,SSG:ssgLogo,NC:ncLogo,KT:ktLogo,키움:kiwoomLogo};
 
 type Screen = keyof typeof design;
 type TemplateNode = string | {tag:string;attrs:Record<string,string>;children:TemplateNode[]};
@@ -52,6 +65,8 @@ export default function V7App(){
   if(style.justifyContent==='space-between'&&style.alignItems==='baseline')props['data-result-row']='true';
   if(n.attrs.role==='dialog')props['data-warning-dialog']='true';
   if(n.tag==='a'&&n.attrs.href==='SimWarning.dc.html')return null;
+  if(n.attrs['data-team']){const label=n.attrs['data-team'];return createElement('button',props,<Image key="logo" src={teamLogos[label]} alt="" width={36} height={36} sizes="36px" style={{width:36,height:36,objectFit:'contain',flexShrink:0}}/>,label);}
+  if(n.tag==='span'&&style.background==='#C30452')return <Image key={key} src={teamLogos[team]} alt={`${team} 로고`} width={24} height={24} sizes="24px" style={{width:24,height:24,objectFit:'contain'}}/>;
   if(n.tag==='input')return createElement(n.tag,props);
   return createElement(n.tag,props,...n.children.map((c,i)=>render(c,`${key}.${i}`,v)));
  }
