@@ -87,7 +87,7 @@ MOOD_MODEL_PATH=scripts/sample/mood-model-demo.json npm run dev
 ```bash
 curl -X POST http://localhost:3000/api/forecast \
   -H 'Content-Type: application/json' \
-  -d '{"bossTitle":"팀장님","team":"한화","player":"선수","favoriteMenus":["국밥"]}'
+  -d '{"relation":"boss","displayName":"팀장님","team":"한화","player":"선수","favoriteMenus":["국밥"]}'
 ```
 
 가상 모델은 `source: sample`이라 실제 데이터 전용 메인 `/api/daily-mood`에 적용되지 않는다.

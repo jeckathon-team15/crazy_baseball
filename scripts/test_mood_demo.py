@@ -60,7 +60,7 @@ process.env.MOOD_MODEL_PATH = process.argv[1];
 process.env.MOOD_SNAPSHOT_PATH = process.argv[2];
 const response = await POST(new Request('http://localhost/api/forecast', {
   method: 'POST', headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({bossTitle:'팀장님', team:'한화', player:'선수', favoriteMenus:['국밥']})
+  body: JSON.stringify({relation:'boss', displayName:'팀장님', team:'한화', player:'선수', favoriteMenus:['국밥']})
 }));
 const body = await response.json();
 if (!response.ok) throw new Error(JSON.stringify(body));

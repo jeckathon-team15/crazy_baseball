@@ -1,8 +1,8 @@
 import type { BossInput, ForecastResponse } from "@/types/forecast";
-import { FAVORITE_MENUS_RANGE } from "@/lib/config";
+import { DISPLAY_NAME_RANGE, FAVORITE_MENUS_RANGE } from "@/lib/config";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { createForecastResponse, getTeamSnapshotStatus, type AnalysisSnapshot } from "@/lib/analysis/forecast-snapshot";
+import { createForecastResponse, createUnavailableForecast, getTeamSnapshotStatus, type AnalysisSnapshot } from "@/lib/analysis/forecast-snapshot";
 import { normalizeTeam, timestamp } from "@/lib/analysis/game-results";
 import { predictMood } from "@/lib/analysis/mood-model";
 
@@ -14,7 +14,11 @@ function validate(body: unknown): BossInput | string {
   if (!body || typeof body !== "object") return "입력값이 비어 있습니다.";
   const b = body as Record<string, unknown>;
 
-  if (!isNonEmptyString(b.bossTitle)) return "상사 호칭을 입력해 주세요.";
+  if (b.relation !== "boss" && b.relation !== "friend") return "관계(직장 상사/친구)를 선택해 주세요.";
+  if (!isNonEmptyString(b.displayName)) return "부르는 이름을 입력해 주세요.";
+  if (b.displayName.trim().length > DISPLAY_NAME_RANGE.max) {
+    return `부르는 이름은 ${DISPLAY_NAME_RANGE.max}자 이내로 입력해 주세요.`;
+  }
   if (!isNonEmptyString(b.team)) return "응원하는 팀을 입력해 주세요.";
   if (!isNonEmptyString(b.player)) return "좋아하는 선수를 입력해 주세요.";
 
@@ -24,7 +28,8 @@ function validate(body: unknown): BossInput | string {
   }
 
   return {
-    bossTitle: b.bossTitle.trim(),
+    relation: b.relation,
+    displayName: b.displayName.trim(),
     team: b.team.trim(),
     player: b.player.trim(),
     favoriteMenus: menus.map((m) => m.trim()),
@@ -57,14 +62,9 @@ export async function POST(request: Request) {
     const analysis = snapshot as AnalysisSnapshot;
     const now = Date.now();
     const status = getTeamSnapshotStatus(analysis, input.team, now);
-    if (status === "missing") {
-      return Response.json({ error: "선택한 팀의 경기 데이터가 없습니다." }, { status: 404 });
-    }
-    if (status === "stale") {
-      return Response.json({ error: "경기 데이터가 오래되어 새 기록이 필요합니다." }, { status: 503 });
-    }
-    if (status === "future") {
-      return Response.json({ error: "경기 데이터의 기준 시각을 확인해 주세요." }, { status: 503 });
+    if (status !== "ready") {
+      // 자료가 없거나 오래된 팀도 화면이 깨지지 않게 기본 예보(fallback: true)로 응답합니다.
+      return Response.json({ ...createUnavailableForecast(input, analysis, status), prediction: { method: "unavailable" } });
     }
     const response: ForecastResponse | null = createForecastResponse(input, analysis);
     if (!response) throw new Error("예보 데이터 형식 오류");
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
         ...response.forecast,
         mood: prediction.mood,
         moodScore: prediction.moodScore,
-        headline: `${warning} · ${input.bossTitle}의 예상 기분은 ${prediction.mood}`,
+        headline: `${warning} · ${input.displayName}의 예상 기분은 ${prediction.mood}`,
         reason: `${response.forecast.reason} 사용자 기분 기록을 학습한 공통 모델을 적용했습니다.`,
         tips: [
           "최근 경기 결과를 먼저 확인해 보세요.",

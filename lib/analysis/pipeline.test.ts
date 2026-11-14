@@ -53,7 +53,7 @@ test("builds a team-specific forecast without exposing raw posts or inventing pl
     games: [game], posts, classifications: labels, players: [],
     teams: ["한화", "삼성"], asOf: "2026-10-02T08:00:00+09:00", source: "sample",
   }, rules);
-  const input = { bossTitle: "과장님", team: "한화", player: "선수", favoriteMenus: ["국밥"] };
+  const input = { relation: "boss" as const, displayName: "과장님", team: "한화", player: "선수", favoriteMenus: ["국밥"] };
   const response = createForecastResponse(input, snapshot);
   assert.ok(response);
   assert.deepEqual(response.input, input);
@@ -105,7 +105,7 @@ test("only uses player records from the team's selected recent games", () => {
     teams: ["한화"], asOf: "2026-10-02T08:00:00+09:00", source: "sample",
   }, rules);
   const response = createForecastResponse({
-    bossTitle: "과장님", team: "한화", player: "선수", favoriteMenus: ["국밥"],
+    relation: "boss" as const, displayName: "과장님", team: "한화", player: "선수", favoriteMenus: ["국밥"],
   }, snapshot);
   assert.ok(response);
   assert.equal(response.performance.playerGames.length, 0);
@@ -122,7 +122,7 @@ test("exposes the most frequent topic for positive community reactions", () => {
     teams: ["한화"], asOf: "2026-10-02T08:00:00+09:00", source: "sample",
   }, rules);
   const response = createForecastResponse({
-    bossTitle: "과장님", team: "한화", player: "선수", favoriteMenus: ["국밥"],
+    relation: "boss" as const, displayName: "과장님", team: "한화", player: "선수", favoriteMenus: ["국밥"],
   }, snapshot);
   assert.ok(response?.performance.highlights.some((highlight) => highlight.includes("선발")));
 });

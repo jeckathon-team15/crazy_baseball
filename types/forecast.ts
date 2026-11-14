@@ -1,7 +1,8 @@
 // 계약(contract) 파일. 필드 이름·단위를 바꾸려면 총괄에게 요청하세요.
 
 export type BossInput = {
-  bossTitle: string; // "과장님", "팀장님"
+  relation: "boss" | "friend"; // 직장 상사 / 친구
+  displayName: string; // 부르는 이름 1~10자, 예: "김 과장님", "민수"
   team: string; // 팀 이름
   player: string; // 선수 이름
   favoriteMenus: string[]; // 1~5개

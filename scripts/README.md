@@ -104,7 +104,7 @@ node --conditions=react-server --import tsx \
 ```bash
 curl -X POST http://localhost:3000/api/forecast \
   -H 'Content-Type: application/json' \
-  -d '{"bossTitle":"과장님","team":"한화","player":"선수","favoriteMenus":["국밥"]}'
+  -d '{"relation":"boss","displayName":"과장님","team":"한화","player":"선수","favoriteMenus":["국밥"]}'
 ```
 
 `node --conditions=react-server --import tsx --test lib/analysis/*.test.ts`로 분석 및 API 테스트를 실행한다.

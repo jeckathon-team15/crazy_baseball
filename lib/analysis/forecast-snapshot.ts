@@ -1,4 +1,4 @@
-import { MAX_RECENT_GAMES, moodFromScore, SCORE_RANGE, SCORE_WEIGHTS } from "@/lib/config";
+import { FALLBACK_MOOD_SCORE, MAX_RECENT_GAMES, moodFromScore, SCORE_RANGE, SCORE_WEIGHTS } from "@/lib/config";
 import type { BossInput, ForecastResponse, PlayerGame } from "@/types/forecast";
 import { selectGamePosts, summarizeSentiment, type FanPost, type PostClassification, type SentimentSummary } from "./fan-posts";
 import { getRecentTeamGames, normalizeTeam, timestamp, type GameRecord, type TeamGame } from "./game-results";
@@ -174,13 +174,58 @@ export function createForecastResponse(input: BossInput, snapshot: AnalysisSnaps
     forecast: {
       mood,
       moodScore,
-      headline: `${warning} · ${input.bossTitle}의 예상 기분은 ${mood}`,
+      headline: `${warning} · ${input.displayName}의 예상 기분은 ${mood}`,
       reason: `${sample}${highlights[0]}입니다. ${fanText}`,
       lunch: { menu: input.favoriteMenus[0], comment: "좋아하는 메뉴 중에서 골랐어요." },
       tips: [
         "최근 경기 결과를 먼저 확인해 보세요.",
         mood === "안 좋음" || mood === "매우 안 좋음" ? "야구 이야기는 분위기를 보고 꺼내세요." : "경기 이야기를 가볍게 나눠 보세요.",
       ],
+      fallback: true,
+    },
+  };
+}
+
+/**
+ * 경기 자료가 없거나(missing) 오래됐거나(stale) 시각이 이상한(future) 팀용 기본 예보.
+ * 다른 팀의 샘플을 보여주지 않고, 화면이 깨지지 않도록 "보통" 예보와 안내 문구를 돌려줍니다.
+ */
+export function createUnavailableForecast(
+  input: BossInput,
+  snapshot: Pick<AnalysisSnapshot, "source" | "asOf">,
+  status: "missing" | "stale" | "future",
+): ForecastResponse {
+  const team = normalizeTeam(input.team) ?? input.team;
+  const mood = moodFromScore(FALLBACK_MOOD_SCORE);
+  const why = status === "missing"
+    ? `아직 ${team}의 최근 경기 자료가 없어요.`
+    : status === "stale"
+      ? `${team}의 경기 자료가 오래되어 새 기록을 기다리고 있어요.`
+      : `${team}의 경기 자료 기준 시각을 확인하고 있어요.`;
+  const asOf = timestamp(snapshot.asOf) === null ? snapshot.asOf : new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date(snapshot.asOf));
+
+  return {
+    input,
+    performance: {
+      team,
+      player: input.player,
+      teamGames: [],
+      playerGames: [],
+      teamScore: FALLBACK_MOOD_SCORE,
+      playerScore: FALLBACK_MOOD_SCORE,
+      highlights: ["경기 자료 준비 중"],
+      source: snapshot.source,
+      asOf,
+    },
+    forecast: {
+      mood,
+      moodScore: FALLBACK_MOOD_SCORE,
+      headline: `야친자 예보 · ${input.displayName}의 예상 기분은 ${mood}`,
+      reason: `${why} 경기 결과 대신 기본 예보를 보여드려요.`,
+      lunch: { menu: input.favoriteMenus[0], comment: "좋아하는 메뉴 중에서 골랐어요." },
+      tips: ["최근 경기 결과를 먼저 확인해 보세요.", "경기 이야기는 상대가 먼저 꺼낼 때 맞춰 주세요."],
       fallback: true,
     },
   };
