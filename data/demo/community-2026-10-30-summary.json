@@ -1,0 +1,32 @@
+{
+  "source": "mania.kr",
+  "dataKind": "small_manual_observation",
+  "gameId": "20261030SSHT0",
+  "gameDate": "2026-10-30",
+  "gameEndsAt": "2026-10-30T21:32:00+09:00",
+  "selectionWindowEndsAt": "2026-10-31T09:32:00+09:00",
+  "teamAttribution": "manual_inferred_from_context_not_board_tag",
+  "originalTextIncluded": false,
+  "teams": {
+    "KIA": {
+      "total": 5,
+      "positive": 1,
+      "neutral": 0,
+      "negative": 0,
+      "uncertain": 4,
+      "validCount": 1,
+      "minimumPosts": 10,
+      "score": null
+    },
+    "삼성": {
+      "total": 7,
+      "positive": 0,
+      "neutral": 0,
+      "negative": 1,
+      "uncertain": 6,
+      "validCount": 1,
+      "minimumPosts": 10,
+      "score": null
+    }
+  }
+}
