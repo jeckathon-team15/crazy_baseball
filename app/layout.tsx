@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "야친자 기상청",
-  description: "상사의 응원팀 경기력으로 보는 내일 기분 예보",
+  title: "야친자로부터 살아남기",
+  description: "홈런볼 하나 권했을 뿐인데 원아웃. 야구에 진심인 가상 상대와 대화하며 눈치전을 펼쳐보세요.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

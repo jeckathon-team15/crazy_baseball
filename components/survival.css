@@ -1,0 +1,323 @@
+@font-face{font-family:Asta;src:url('assets/asta-sans.ttf') format('truetype');font-weight:100 900;font-display:swap}
+.yachinja-ui-root{--paper:#f5f3ee;--white:#fffefa;--ink:#272727;--muted:#86817a;--line:#d9d5cd;--red:#823c48;--red-soft:#f0e6e5;--mono:"Courier New",monospace}
+.yachinja-ui-root *{box-sizing:border-box}
+.yachinja-ui-root{margin:0;background:var(--paper);color:var(--ink);font-family:Asta,"Malgun Gothic",sans-serif;letter-spacing:-.025em;-webkit-font-smoothing:antialiased}
+.yachinja-ui-root button,.yachinja-ui-root input,.yachinja-ui-root select{font:inherit}
+.yachinja-ui-root button,.yachinja-ui-root a,.yachinja-ui-root input,.yachinja-ui-root select{-webkit-tap-highlight-color:transparent}
+.yachinja-ui-root button{cursor:pointer;color:inherit}
+.yachinja-ui-root a{color:inherit;text-decoration:none}
+.yachinja-ui-root button{border:0;background:none}
+.yachinja-ui-root button:focus-visible,.yachinja-ui-root a:focus-visible,.yachinja-ui-root input:focus-visible,.yachinja-ui-root select:focus-visible{outline:2px solid var(--red);outline-offset:4px}
+.yachinja-ui-root h1,.yachinja-ui-root h2,.yachinja-ui-root h3,.yachinja-ui-root p{margin:0}
+.yachinja-ui-root svg{display:block}
+.yachinja-ui-root button:disabled{cursor:not-allowed;opacity:.4}
+.yachinja-ui-root [hidden]{display:none!important}
+.yachinja-ui-root .shell{max-width:1440px;margin:auto;padding:0 68px}
+.yachinja-ui-root .header{height:114px;display:flex;align-items:center;gap:28px;border-bottom:1px solid var(--ink)}
+.yachinja-ui-root .wordmark{display:flex;align-items:center;gap:10px;font-size:33px;font-weight:850;letter-spacing:-.09em}
+.yachinja-ui-root .wordmark svg{width:35px;height:35px;fill:none;stroke:var(--red);stroke-width:1.4}
+.yachinja-ui-root .wordmark-period{color:var(--red)}
+.yachinja-ui-root .brand-caption{font-size:11px;line-height:1.6;color:var(--muted);padding-left:25px;border-left:1px solid var(--line)}
+.yachinja-ui-root .header-right{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;color:#66635e}
+.yachinja-ui-root .live-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--red)}
+.yachinja-ui-root .archive{margin-left:26px;font-size:10px;color:var(--muted)}
+.yachinja-ui-root .steps{display:flex;align-items:center;gap:21px;border-bottom:1px solid var(--line);height:69px}
+.yachinja-ui-root .step{padding:10px 0;font-size:11px;color:#a09a92;white-space:nowrap}
+.yachinja-ui-root .step span{font-family:var(--mono);font-size:10px;margin-right:8px}
+.yachinja-ui-root .step.active{color:var(--red);font-weight:800}
+.yachinja-ui-root .step-line{width:32px;height:1px;background:var(--line)}
+.yachinja-ui-root .nav-note{margin-left:auto;font-size:10px;color:#928c84}
+.yachinja-ui-root .view{padding:59px 0 55px}
+.yachinja-ui-root .intro-grid{display:grid;grid-template-columns:1.14fr 1fr;gap:100px;align-items:start}
+.yachinja-ui-root .eyebrow{font-size:10px;font-weight:750;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:9px}
+.yachinja-ui-root .tiny-cross{color:var(--red);font-size:17px}
+.yachinja-ui-root .issue{font-family:var(--mono);font-weight:400;color:var(--muted);margin-left:auto;letter-spacing:.06em}
+.yachinja-ui-root h1{font-size:clamp(40px,4.4vw,64px);font-weight:700;letter-spacing:-.065em;line-height:1.22;margin:24px 0 22px;word-break:keep-all}
+.yachinja-ui-root h1 em{font-style:normal;color:var(--red)}
+.yachinja-ui-root .intro-copy{color:#77736d;font-size:14px;line-height:1.9;letter-spacing:-.025em}
+.yachinja-ui-root .person-line{display:flex;gap:12px;align-items:center;margin:31px 0 34px}
+.yachinja-ui-root .person-monogram{width:36px;height:36px;flex-shrink:0;display:grid;place-items:center;border:1px solid #d7c8c8;border-radius:50%;color:var(--red);font-size:12px;font-weight:800;background:#eee5e2}
+.yachinja-ui-root .person-line strong{font-size:12px;font-weight:750}
+.yachinja-ui-root .person-line p{font-size:10px;color:var(--muted);margin-top:4px}
+.yachinja-ui-root .text-button{font-size:11px;border-bottom:1px solid #b6ada5;padding:4px 0;line-height:1.6;white-space:nowrap}
+.yachinja-ui-root .person-line .text-button{margin-left:auto;color:#66635c;font-size:10px}
+.yachinja-ui-root .field-heading{border-top:1px solid var(--ink);border-bottom:1px solid var(--line);padding:12px 0;display:flex;justify-content:space-between;align-items:center;font-size:10px;font-weight:700}
+.yachinja-ui-root .mono{font-family:var(--mono);font-size:9px;font-weight:400;color:var(--muted);letter-spacing:.04em}
+.yachinja-ui-root .game-row{display:flex;align-items:center;justify-content:space-between;padding:20px 0 17px;gap:8px}
+.yachinja-ui-root .game-row>span{display:flex;align-items:center;gap:9px;font-size:12px}
+.yachinja-ui-root .game-row b{font-weight:600}
+.yachinja-ui-root .team-mark{font-style:normal;display:grid;place-items:center;width:24px;height:24px;background:#373b3e;color:#f5f2eb;font-size:10px;border-radius:3px}
+.yachinja-ui-root .team-mark.away{background:#dbd9d1;color:#686961}
+.yachinja-ui-root .game-score{font-family:var(--mono);font-size:33px;font-weight:400;letter-spacing:-.09em}
+.yachinja-ui-root .game-score span{color:#b2ada4;font-size:22px;margin:0 6px}
+.yachinja-ui-root .event-line{display:flex;gap:12px;align-items:center;border-bottom:1px solid var(--line);padding:0 0 18px;font-size:11px;color:#736e66}
+.yachinja-ui-root .event-time{font-family:var(--mono);color:var(--red);white-space:nowrap;font-size:10px}
+.yachinja-ui-root .event-line p{line-height:1.6}
+.yachinja-ui-root .brief-warning{display:flex;gap:12px;align-items:center;padding:22px 0 23px}
+.yachinja-ui-root .brief-warning svg{width:23px;height:23px;fill:none;stroke:var(--red);stroke-width:1.4;flex-shrink:0}
+.yachinja-ui-root .brief-warning p{font-size:11px;line-height:1.9;color:#85776f}
+.yachinja-ui-root .brief-warning strong{font-weight:650;color:var(--red)}
+.yachinja-ui-root .start-button{width:100%;display:flex;justify-content:space-between;align-items:center;padding:18px 22px;background:var(--red);color:#fff9f1;font-size:12px;font-weight:600;border-radius:3px;transition:background .2s}
+.yachinja-ui-root .start-button:hover{background:#6c2d39}
+.yachinja-ui-root .start-button svg{width:26px;height:18px;stroke:currentColor;stroke-width:1;fill:none}
+.yachinja-ui-root .start-caption{font-size:9px;color:#9b9389;margin-top:12px}
+.yachinja-ui-root .preview-column{padding-top:7px}
+.yachinja-ui-root .preview-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:10px;color:#6f6b65;gap:9px}
+.yachinja-ui-root .preview-chat{background:var(--white);border:1px solid var(--line);border-radius:4px;box-shadow:0 12px 30px #3d332006}
+.yachinja-ui-root .chat-heading{height:78px;display:flex;align-items:center;gap:12px;padding:0 25px;border-bottom:1px solid #e7e2da}
+.yachinja-ui-root .chat-heading strong{font-size:12px;font-weight:700}
+.yachinja-ui-root .chat-heading p{font-size:10px;color:var(--muted);margin-top:5px}
+.yachinja-ui-root .chat-heading .person-monogram{width:33px;height:33px}
+.yachinja-ui-root .chat-menu{font-size:24px;letter-spacing:.1em;margin-left:auto;color:#969089}
+.yachinja-ui-root .preview-conversation{padding:25px 25px 31px;display:flex;flex-direction:column;align-items:flex-start}
+.yachinja-ui-root .date-divider{text-align:center;width:100%;font-size:9px;color:#a39c91;margin-bottom:32px}
+.yachinja-ui-root .bubble{font-size:13px;line-height:1.7;padding:13px 16px;max-width:86%;word-break:break-word;overflow-wrap:anywhere}
+.yachinja-ui-root .outgoing{align-self:flex-end;background:#e9e5de;border-radius:10px 1px 10px 10px}
+.yachinja-ui-root .incoming{background:#f5f2ed;border:1px solid #ece6dd;border-radius:1px 10px 10px 10px}
+.yachinja-ui-root .incoming.narrow{margin-top:6px}
+.yachinja-ui-root .read-status{align-self:flex-end;font-size:8px;color:#a59c8f;margin-top:6px}
+.yachinja-ui-root .sender{font-size:10px;color:#8a8176;margin:27px 0 8px}
+.yachinja-ui-root .trigger-tag{display:flex;gap:8px;align-items:center;font-size:9px;color:#9c7f7d;margin-top:16px}
+.yachinja-ui-root .trigger-tag span{font-family:var(--mono);color:var(--red);background:#f3e8e6;padding:4px 6px;border-radius:2px}
+.yachinja-ui-root .preview-meter{padding:19px 25px 22px;border-top:1px solid var(--line);background:#fcfaf5}
+.yachinja-ui-root .preview-meter>div:first-child{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:#817a70}
+.yachinja-ui-root .preview-meter strong{font-family:var(--mono);font-size:27px;font-weight:400;color:var(--red)}
+.yachinja-ui-root .preview-meter strong span{font-size:11px;color:#aaa096;padding-left:5px}
+.yachinja-ui-root .meter-track{height:3px;background:#e5dfd5;overflow:hidden}
+.yachinja-ui-root .meter-track>span{display:block;height:100%;background:var(--red);transition:width .4s}
+.yachinja-ui-root .preview-meter .meter-track{margin:14px 0 13px}
+.yachinja-ui-root .preview-meter p{font-size:10px;color:#8b8174}
+.yachinja-ui-root .margin-note{display:flex;gap:15px;margin:21px 0 0 3px}
+.yachinja-ui-root .margin-note>span{font-family:var(--mono);font-size:9px;color:var(--red);margin-top:3px}
+.yachinja-ui-root .margin-note p{font-size:10px;line-height:1.9;color:#989085}
+.yachinja-ui-root .footer{border-top:1px solid var(--line);display:flex;justify-content:space-between;padding:22px 0 25px;font-size:10px;font-weight:650;gap:15px}
+.yachinja-ui-root .footer-caption{font-weight:400;color:#9c9489;margin-left:11px}
+.yachinja-ui-root .footer>span:last-child{font-size:9px;color:#a29a90;font-weight:400}
+.yachinja-ui-root .session-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:34px}
+.yachinja-ui-root .session-top h2{font-size:34px;font-weight:650;letter-spacing:-.05em;line-height:1.3;margin-top:13px}
+.yachinja-ui-root .session-grid{display:grid;grid-template-columns:270px 1fr;gap:70px}
+.yachinja-ui-root .telemetry{padding:9px 0}
+.yachinja-ui-root .telemetry-heading{font-size:10px;display:flex;align-items:center;gap:9px;color:#827c73}
+.yachinja-ui-root .anger-value{display:flex;align-items:baseline;gap:7px;margin-top:23px;font-family:var(--mono);color:var(--red)}
+.yachinja-ui-root .anger-value>span{font-size:92px;font-weight:400;letter-spacing:-.09em;line-height:1.1}
+.yachinja-ui-root .anger-value small{font-size:14px;color:#a69d92}
+.yachinja-ui-root .telemetry>p{font-size:12px;color:#9a5c60;margin:10px 0 20px}
+.yachinja-ui-root .scale{display:flex;justify-content:space-between;font-size:9px;color:#a69c8d;margin-top:9px}
+.yachinja-ui-root .telemetry-rule{height:1px;background:var(--line);margin:29px 0 19px}
+.yachinja-ui-root .stat-row{display:flex;justify-content:space-between;font-size:11px;margin:16px 0;color:#8a8074}
+.yachinja-ui-root .stat-row strong{font-weight:650;color:#61584f}
+.yachinja-ui-root .context-note{margin-top:31px;border-top:1px solid var(--line);padding-top:22px}
+.yachinja-ui-root .context-note .eyebrow{font-size:9px;color:#81776d}
+.yachinja-ui-root .context-note p{font-size:16px;line-height:1.6;margin:13px 0 10px;color:#5b5048}
+.yachinja-ui-root .context-note>span:last-child{font-size:10px;line-height:1.8;color:#a29385;display:block}
+.yachinja-ui-root .last-trigger{font-size:11px;line-height:1.8;margin:25px 0;color:var(--red);min-height:39px}
+.yachinja-ui-root .restart-button{color:#8c8174;font-size:10px}
+.yachinja-ui-root .live-chat{background:var(--white);border:1px solid var(--line);border-radius:4px;overflow:hidden;display:flex;flex-direction:column;height:620px}
+.yachinja-ui-root .messages{height:100%;overflow:auto;padding:24px 30px;display:flex;flex-direction:column;align-items:flex-start;gap:11px;scroll-behavior:smooth}
+.yachinja-ui-root .messages .date-divider{margin-bottom:10px}
+.yachinja-ui-root .messages .sender{margin:10px 0 -4px}
+.yachinja-ui-root .messages .bubble{font-size:13px;max-width:82%}
+.yachinja-ui-root .message-receipt{font-size:9px;color:#a67a79;margin:0 0 6px;font-family:Asta,sans-serif}
+.yachinja-ui-root .message-receipt.calm{color:#70806e}
+.yachinja-ui-root .composer-area{border-top:1px solid var(--line);padding:17px 22px 14px}
+.yachinja-ui-root .suggestions{display:flex;gap:6px;overflow:auto;padding-bottom:12px}
+.yachinja-ui-root .suggestions button{white-space:nowrap;border:1px solid #e6e0d7;padding:7px 9px;font-size:10px;border-radius:3px;color:#847a6e;background:#fbf9f4}
+.yachinja-ui-root .suggestions button:hover{border-color:var(--red);color:var(--red)}
+.yachinja-ui-root #chat-form{display:flex;border:1px solid #d3ccc1;border-radius:3px;padding:5px 5px 5px 13px;gap:5px}
+.yachinja-ui-root #message-input{background:transparent;outline:0;border:0;flex:1;min-width:0;font-size:12px;color:var(--ink)}
+.yachinja-ui-root #message-input::placeholder{color:#a59c90}
+.yachinja-ui-root .send-button{background:var(--red);color:var(--white);width:33px;height:33px;display:grid;place-items:center;border-radius:2px}
+.yachinja-ui-root .send-button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.3}
+.yachinja-ui-root .composer-note{display:flex;justify-content:space-between;font-size:8px;color:#afa395;margin-top:9px}
+.yachinja-ui-root .result-layout{display:grid;grid-template-columns:1fr 1fr;gap:110px;padding:30px 0 70px}
+.yachinja-ui-root .result-layout h2{font-size:61px;font-weight:650;letter-spacing:-.065em;line-height:1.2;margin:28px 0}
+.yachinja-ui-root .result-description{font-size:14px;line-height:1.9;color:#897d70;margin-bottom:40px}
+.yachinja-ui-root .result-back{margin-top:16px;color:#897d70}
+.yachinja-ui-root .result-paper{padding:30px;background:#fffdf5;border:1px solid var(--line);transform:rotate(1deg)}
+.yachinja-ui-root .result-score{padding:26px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:end}
+.yachinja-ui-root .result-score>span{font-family:var(--mono);font-size:90px;line-height:1;color:var(--red);letter-spacing:-.09em}
+.yachinja-ui-root .result-score small{font-size:10px;color:#a29483;margin-bottom:8px}
+.yachinja-ui-root .moment{padding:21px 0;border-bottom:1px solid var(--line)}
+.yachinja-ui-root .moment small{font-size:9px;color:var(--red)}
+.yachinja-ui-root .moment p{font-size:15px;line-height:1.6;margin:9px 0}
+.yachinja-ui-root .moment span{font-size:10px;color:#9b8c7a}
+.yachinja-ui-root .result-footer{font-size:11px;line-height:1.8;color:#9b8c7a;margin-top:27px}
+.yachinja-ui-root dialog{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:35px;width:min(440px,calc(100% - 32px))}
+.yachinja-ui-root dialog::backdrop{background:#25232270;backdrop-filter:blur(4px)}
+.yachinja-ui-root dialog h2{font-size:33px;font-weight:650;line-height:1.2;margin:18px 0 25px}
+.yachinja-ui-root dialog label{font-size:11px;display:block;color:#83766b;margin:17px 0 8px}
+.yachinja-ui-root dialog input,.yachinja-ui-root dialog select{border:1px solid var(--line);padding:11px;width:100%;background:var(--white);color:var(--ink);border-radius:2px;font-size:13px}
+.yachinja-ui-root .dialog-actions{display:flex;gap:10px;margin-top:27px}
+.yachinja-ui-root .dialog-actions button{padding:13px 20px;font-size:12px;border:1px solid var(--line);border-radius:2px}
+.yachinja-ui-root .dialog-actions button[type=submit]{background:var(--red);color:var(--white);border-color:var(--red);flex:1}
+.yachinja-ui-root .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(min-width:1600px){.yachinja-ui-root .view{padding-top:70px}
+.yachinja-ui-root .intro-grid{gap:120px}
+.yachinja-ui-root .preview-column{padding-top:10px}
+}
+@media(max-width:1050px){.yachinja-ui-root .shell{padding:0 35px}
+.yachinja-ui-root .intro-grid{gap:45px}
+.yachinja-ui-root .brand-caption{display:none}
+.yachinja-ui-root .header{height:95px}
+.yachinja-ui-root .nav-note{display:none}
+.yachinja-ui-root .view{padding-top:42px}
+.yachinja-ui-root .session-grid{grid-template-columns:210px 1fr;gap:35px}
+.yachinja-ui-root .result-layout{gap:50px}
+.yachinja-ui-root .result-layout h2{font-size:48px}
+}
+@media(max-width:700px){.yachinja-ui-root .shell{padding:0 23px}
+.yachinja-ui-root .header{height:78px}
+.yachinja-ui-root .wordmark{font-size:28px;gap:8px}
+.yachinja-ui-root .wordmark svg{width:29px;height:29px}
+.yachinja-ui-root .header-right{font-size:9px;gap:5px}
+.yachinja-ui-root .archive{display:none}
+.yachinja-ui-root .steps{height:58px;gap:12px}
+.yachinja-ui-root .step{font-size:9px;min-height:44px}
+.yachinja-ui-root .step span{font-size:9px;margin-right:5px}
+.yachinja-ui-root .step-line{width:17px}
+.yachinja-ui-root .view{padding:33px 0 32px}
+.yachinja-ui-root .intro-grid{grid-template-columns:1fr;gap:37px}
+.yachinja-ui-root .eyebrow{font-size:9px}
+.yachinja-ui-root h1{font-size:43px;margin:21px 0 17px}
+.yachinja-ui-root .intro-copy{font-size:12px;line-height:1.9}
+.yachinja-ui-root .person-line{margin:25px 0 28px}
+.yachinja-ui-root .game-score{font-size:32px}
+.yachinja-ui-root .start-button{padding:17px 19px;font-size:12px;min-height:50px}
+.yachinja-ui-root .start-caption{font-size:9px}
+.yachinja-ui-root .preview-column{padding:0}
+.yachinja-ui-root .preview-label{font-size:9px}
+.yachinja-ui-root .preview-label .mono{font-size:8px}
+.yachinja-ui-root .preview-chat .chat-heading{height:70px;padding:0 20px}
+.yachinja-ui-root .preview-conversation{padding:22px 20px 25px}
+.yachinja-ui-root .bubble{font-size:12px}
+.yachinja-ui-root .preview-meter{padding:18px 20px}
+.yachinja-ui-root .margin-note{margin-top:17px}
+.yachinja-ui-root .footer{display:block;padding:19px 0}
+.yachinja-ui-root .footer>span:last-child{display:block;line-height:1.8;margin-top:10px;font-size:8px}
+.yachinja-ui-root .session-top{margin-bottom:24px;align-items:flex-start}
+.yachinja-ui-root .session-top h2{font-size:27px;margin-top:11px}
+.yachinja-ui-root .session-top .text-button{font-size:9px;margin-top:4px}
+.yachinja-ui-root .session-grid{grid-template-columns:1fr;gap:17px}
+.yachinja-ui-root .telemetry{display:grid;grid-template-columns:1fr auto;padding:0}
+.yachinja-ui-root .telemetry-heading{font-size:9px;grid-column:1}
+.yachinja-ui-root .anger-value{grid-column:2;grid-row:1/4;margin:0;align-self:center}
+.yachinja-ui-root .anger-value>span{font-size:49px}
+.yachinja-ui-root .anger-value small{font-size:10px}
+.yachinja-ui-root .telemetry>p{font-size:10px;margin:7px 0 13px}
+.yachinja-ui-root .telemetry>.meter-track{grid-column:1/-1}
+.yachinja-ui-root .scale{grid-column:1/-1;font-size:8px;margin-top:6px}
+.yachinja-ui-root .telemetry-rule,.yachinja-ui-root .stat-row,.yachinja-ui-root .context-note,.yachinja-ui-root .restart-button{display:none}
+.yachinja-ui-root .stat-row:first-of-type{display:none}
+.yachinja-ui-root .last-trigger{grid-column:1/-1;font-size:10px;min-height:0;margin:10px 0 0}
+.yachinja-ui-root .live-chat{height:570px}
+.yachinja-ui-root .live-chat .chat-heading{height:66px;min-height:66px;padding:0 17px}
+.yachinja-ui-root .messages{padding:19px 17px}
+.yachinja-ui-root .messages .bubble{font-size:12px;max-width:91%}
+.yachinja-ui-root .composer-area{padding:13px 12px}
+.yachinja-ui-root .composer-note{font-size:7px}
+.yachinja-ui-root .suggestions button{font-size:9px;min-height:36px}
+.yachinja-ui-root .suggestions{padding-bottom:10px}
+.yachinja-ui-root #message-input{font-size:11px}
+.yachinja-ui-root .result-layout{grid-template-columns:1fr;gap:37px;padding:0}
+.yachinja-ui-root .result-layout h2{font-size:43px}
+.yachinja-ui-root .result-description{font-size:12px;margin-bottom:25px}
+.yachinja-ui-root .result-paper{padding:25px}
+.yachinja-ui-root .result-score>span{font-size:77px}
+.yachinja-ui-root dialog{padding:27px}
+.yachinja-ui-root .text-button{min-height:36px}
+.yachinja-ui-root .person-line .text-button{display:flex;align-items:center}
+.yachinja-ui-root .footer-caption{margin-left:7px}
+}
+@media(prefers-reduced-motion:reduce){.yachinja-ui-root *{transition:none!important;scroll-behavior:auto!important}
+}
+.yachinja-ui-root .vertical-gauge{--gauge-color:#965463;display:flex;align-items:stretch;gap:20px;height:236px;margin:27px 0 17px;padding:5px 0 5px 3px}
+.yachinja-ui-root .gauge-rail{position:relative;width:35px;border:1px solid #d3c8c3;border-radius:3px;background:#ebe5dd;overflow:hidden}
+.yachinja-ui-root .gauge-fill{position:absolute;bottom:0;left:0;right:0;background:var(--gauge-color);transition:height .5s ease,background .4s ease}
+.yachinja-ui-root .gauge-ticks{position:absolute;inset:0;background:repeating-linear-gradient(to top,transparent 0,transparent calc(20% - 1px),#f5f3ee99 calc(20% - 1px),#f5f3ee99 20%);pointer-events:none}
+.yachinja-ui-root .gauge-labels{display:flex;flex-direction:column;justify-content:space-between;padding:0;font-size:10px;color:#96877c}
+.yachinja-ui-root .gauge-labels span:first-child{color:#88525b}
+.yachinja-ui-root .vertical-gauge[data-level=calm]{--gauge-color:#758776}
+.yachinja-ui-root .vertical-gauge[data-level=danger]{--gauge-color:#a63c48}
+.yachinja-ui-root .telemetry>p{margin:0 0 20px}
+.yachinja-ui-root .telemetry-heading{margin-bottom:3px}
+@media(max-width:700px){.yachinja-ui-root .telemetry{display:grid;grid-template-columns:86px 1fr;column-gap:21px;align-items:start;padding:4px 0}
+.yachinja-ui-root .telemetry-heading{grid-column:1/-1;margin-bottom:18px}
+.yachinja-ui-root .vertical-gauge{grid-column:1;grid-row:2/4;height:126px;gap:10px;margin:0;padding:0}
+.yachinja-ui-root .gauge-rail{width:20px;flex-shrink:0}
+.yachinja-ui-root .gauge-labels{font-size:8px;white-space:nowrap}
+.yachinja-ui-root .telemetry>p{grid-column:2;grid-row:2;font-size:14px;line-height:1.6;margin:8px 0 0;align-self:end}
+.yachinja-ui-root .last-trigger{grid-column:2;grid-row:3;font-size:10px;line-height:1.8;margin:8px 0 0;align-self:start}
+.yachinja-ui-root .session-grid{gap:25px}
+}
+@media(min-width:701px){.yachinja-ui-root .session-grid{grid-template-columns:minmax(0,1fr) 270px}
+.yachinja-ui-root .live-chat{grid-column:1;grid-row:1}
+.yachinja-ui-root .telemetry{grid-column:2;grid-row:1}
+}
+@media(min-width:701px) and (max-width:1050px){.yachinja-ui-root .session-grid{grid-template-columns:minmax(0,1fr) 210px}
+}
+
+.yachinja-ui-root{min-height:100dvh;width:100%;color-scheme:light}
+.yachinja-ui-root .wordmark{font-size:20px;line-height:1.15;letter-spacing:-.06em;text-align:left}
+.yachinja-ui-root .brand-second{font-size:26px}
+.yachinja-ui-root .demo-badge{margin-left:10px;padding:5px 8px;border:1px solid var(--line);border-radius:3px;font-size:9px}
+.yachinja-ui-root .warning-symbol{display:grid;place-items:center;width:25px;height:25px;border:1px solid var(--red);border-radius:50%;color:var(--red)}
+.yachinja-ui-root .preview-character{display:flex;align-items:center;justify-content:center;gap:20px;padding:16px 25px;border-top:1px solid var(--line);background:#f9f6f0}
+.yachinja-ui-root .preview-character p{font-size:12px;line-height:1.9;color:var(--muted);margin-top:8px}
+.yachinja-ui-root .baseball-face{width:170px;height:auto;flex-shrink:0}
+.yachinja-ui-root .preview-character .baseball-face{width:125px}
+.yachinja-ui-root .api-report{margin-top:23px;font-size:10px;color:var(--muted);line-height:1.8}
+.yachinja-ui-root .api-report summary{cursor:pointer;display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line)}
+.yachinja-ui-root .api-report p{margin:8px 0}
+.yachinja-ui-root .sample-result{border-left:2px solid var(--line);padding-left:12px;margin-top:12px}
+.yachinja-ui-root .error-message{color:var(--red);font-size:12px;line-height:1.7;margin-top:10px}
+.yachinja-ui-root .chat-form{display:flex;border:1px solid #d3ccc1;border-radius:3px;padding:5px 5px 5px 13px;gap:5px}
+.yachinja-ui-root .chat-form input{background:transparent;outline:0;border:0;flex:1;min-width:0;font-size:13px;color:var(--ink)}
+.yachinja-ui-root .chat-form input::placeholder{color:#a59c90}
+.yachinja-ui-root .live-chat{height:clamp(510px,calc(100dvh - 310px),700px)}
+.yachinja-ui-root .chat-heading,.yachinja-ui-root .composer-area{flex-shrink:0}
+.yachinja-ui-root .messages{min-height:0;flex:1}
+.yachinja-ui-root .message-group{display:flex;flex-direction:column;align-items:flex-start;max-width:85%;gap:6px}
+.yachinja-ui-root .message-group.user{align-self:flex-end;align-items:flex-end}
+.yachinja-ui-root .message-group .bubble{max-width:100%}
+.yachinja-ui-root .message-reason{font-size:10px;line-height:1.8;color:#8b8179}
+.yachinja-ui-root .message-reason summary{cursor:pointer}
+.yachinja-ui-root .message-reason p{max-width:340px;margin-top:6px;padding:8px 10px;background:#f5f2ed}
+.yachinja-ui-root .out-reason{color:var(--red)}
+.yachinja-ui-root .character-monitor{display:flex;gap:18px;align-items:center;justify-content:center;margin:18px 0 9px}
+.yachinja-ui-root .character-monitor .vertical-gauge{height:130px;margin:0;padding:0}
+.yachinja-ui-root .character-monitor .gauge-rail{width:15px}
+.yachinja-ui-root .character-caption{font-size:11px!important;text-align:center;line-height:1.7}
+.yachinja-ui-root .out-panel{margin-top:25px;border-top:1px solid var(--line);padding:19px 0 0}
+.yachinja-ui-root .out-dots{display:flex;gap:10px;margin:14px 0 10px}
+.yachinja-ui-root .out-dots span{width:15px;height:15px;border:1px solid #b8a6a4;border-radius:50%;transition:background .2s}
+.yachinja-ui-root .out-dots .filled{background:var(--red);border-color:var(--red)}
+.yachinja-ui-root .out-panel strong{font-size:14px;color:var(--red);font-weight:650}
+.yachinja-ui-root .review-button{display:block;margin:23px 0 14px;color:var(--red)}
+.yachinja-ui-root .result-mascot{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:15px 0}
+.yachinja-ui-root .result-mascot strong{font-size:28px;color:var(--red)}
+.yachinja-ui-root .modal-backdrop{position:fixed;inset:0;z-index:100;background:#25232270;backdrop-filter:blur(4px);display:grid;place-items:center;padding:20px;overflow:auto}
+.yachinja-ui-root .profile-modal{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:32px;width:min(430px,100%);max-height:90dvh;overflow:auto}
+.yachinja-ui-root .profile-modal h2{font-size:32px;line-height:1.2;margin:18px 0 25px}
+.yachinja-ui-root .profile-modal label{display:block;font-size:11px;color:#83766b;margin:17px 0 8px}
+.yachinja-ui-root .profile-modal input,.yachinja-ui-root .profile-modal select{border:1px solid var(--line);padding:11px;width:100%;background:var(--white);color:var(--ink);border-radius:2px;font-size:13px}
+
+@media(max-width:700px){
+ .yachinja-ui-root .header{gap:12px}.yachinja-ui-root .header-right{font-size:8px}.yachinja-ui-root .demo-badge{display:none}
+ .yachinja-ui-root .wordmark{font-size:15px}.yachinja-ui-root .brand-second{font-size:21px}
+ .yachinja-ui-root .session-grid{display:flex;flex-direction:column;gap:20px}
+ .yachinja-ui-root .live-chat{height:560px}
+ .yachinja-ui-root .telemetry{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;align-items:center}
+ .yachinja-ui-root .telemetry-heading{grid-column:1/-1;margin:0}
+ .yachinja-ui-root .character-monitor{grid-column:1;grid-row:2/4;gap:8px;margin:0}
+ .yachinja-ui-root .character-monitor .baseball-face{width:110px}
+ .yachinja-ui-root .character-monitor .vertical-gauge{height:85px}
+ .yachinja-ui-root .telemetry>.character-caption{grid-column:2;grid-row:3;margin:0!important;text-align:left;font-size:10px!important}
+ .yachinja-ui-root .out-panel{grid-column:2;grid-row:2;margin:0;padding:0;border:0}
+ .yachinja-ui-root .out-dots{margin:8px 0}.yachinja-ui-root .out-panel strong{font-size:12px}
+ .yachinja-ui-root .review-button{grid-column:1/-1;margin:0;justify-self:start}
+ .yachinja-ui-root .restart-button{display:block;grid-column:1/-1;justify-self:start}
+ .yachinja-ui-root .message-group{max-width:93%}
+ .yachinja-ui-root .chat-form input{font-size:16px}
+ .yachinja-ui-root .send-button{width:38px;height:38px}
+ .yachinja-ui-root .issue{font-size:8px}
+}
