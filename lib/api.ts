@@ -1,4 +1,13 @@
 import type { BossInput, ForecastResponse } from "@/types/forecast";
+import type { DailyMood } from "@/lib/analysis/daily-mood";
+
+export async function getDailyMood(input:{team:string;date:string},signal?:AbortSignal):Promise<DailyMood>{
+ const response=await fetch(`/api/daily-mood?${new URLSearchParams(input)}`,{signal,cache:"no-store"});
+ const data=await response.json().catch(()=>null);
+ if(!response.ok)throw new Error(data?.error??"경기 결과를 불러오지 못했어요.");
+ if(!data||!["ready","pending","no_game"].includes(data.status)||!Array.isArray(data.games)||data.date!==input.date)throw new Error("경기 응답을 확인할 수 없어요.");
+ return data as DailyMood;
+}
 
 // 클라이언트에서 /api/forecast를 호출합니다. (웹 담당 관리)
 

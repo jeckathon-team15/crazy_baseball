@@ -4,11 +4,11 @@ import type { Mood } from "@/types/forecast";
 
 /** moodScore 하한선 → 기분. 위에서부터 순서대로 검사합니다. */
 export const MOOD_THRESHOLDS: ReadonlyArray<{ min: number; mood: Mood }> = [
-  { min: 60, mood: "맑음" },
-  { min: 20, mood: "구름 조금" },
-  { min: -20, mood: "흐림" },
-  { min: -60, mood: "비" },
-  { min: -Infinity, mood: "천둥번개" },
+  { min: 60, mood: "매우 좋음" },
+  { min: 20, mood: "좋음" },
+  { min: -20, mood: "보통" },
+  { min: -60, mood: "안 좋음" },
+  { min: -Infinity, mood: "매우 안 좋음" },
 ];
 
 /** moodScore(-100~100)를 기분 단계로 변환 */

@@ -4,7 +4,10 @@ import { createElement, Fragment, useEffect, useRef, useState, type CSSPropertie
 import design from "./v7-design.json";
 import { MOODS, ORDER, type MoodKey } from "./v7-moods";
 import { initialDemo, playDemoTurn } from "./survival-demo";
-import { getForecast } from "@/lib/api";
+import { getForecast, getDailyMood } from "@/lib/api";
+import NoGame from "./no-game";
+import { dailyAsReport, moodKey, extremeDemo } from "./daily-experience";
+import type { DailyMood } from "@/lib/analysis/daily-mood";
 import type { ForecastResponse } from "@/types/forecast";
 import "./v7.css";
 import AnalysisLoading from "./analysis-loading";
@@ -23,7 +26,7 @@ import kiwoomLogo from "./assets/team-logos/kiwoom_sym.png";
 
 const teamLogos:Record<string,typeof lgLogo>={LG:lgLogo,두산:doosanLogo,KIA:kiaLogo,삼성:samsungLogo,롯데:lotteLogo,한화:hanwhaLogo,SSG:ssgLogo,NC:ncLogo,KT:ktLogo,키움:kiwoomLogo};
 
-type Screen = keyof typeof design;
+type Screen = keyof typeof design | "no_game";
 type TemplateNode = string | {tag:string;attrs:Record<string,string>;children:TemplateNode[]};
 type Values = Record<string,unknown>;
 const teams = [{name:"LG",color:"#C30452"},{name:"두산",color:"#131230"},{name:"KIA",color:"#C8102E"},{name:"삼성",color:"#074CA1"},{name:"롯데",color:"#041E42"},{name:"한화",color:"#FF6600"},{name:"SSG",color:"#CE0E2D"},{name:"NC",color:"#315288"},{name:"KT",color:"#000000"},{name:"키움",color:"#570514"}];
@@ -34,6 +37,7 @@ function inlineStyle(raw:string,v:Values):CSSProperties{return Object.fromEntrie
 
 export default function V7App(){
  const [screen,setScreen]=useState<Screen>('main');
+ const [date,setDate]=useState('2026-10-01');const dateInput=useRef<HTMLInputElement>(null);const [dataMode,setDataMode]=useState<'live'|'sample'>('live');const [daily,setDaily]=useState<DailyMood|null>(null);
  const [team,setTeam]=useState('LG');const [name,setName]=useState('과장님');const [relation,setRelation]=useState('boss');
  const [mood,setMood]=useState<MoodKey>('vbad');const [report,setReport]=useState<ForecastResponse|null>(null);const [error,setError]=useState('');
  const [game,setGame]=useState(initialDemo);const [messages,setMessages]=useState([{role:'assistant',text:initialDemo.last.reply}]);const [input,setInput]=useState('');
@@ -43,20 +47,20 @@ export default function V7App(){
  function go(next:Screen){setScreen(next);window.scrollTo({top:0});}
  function startChat(){setGame(initialDemo);setMessages([{role:'assistant',text:relation==='friend'?'어제 경기 봤어? 오늘은 야구 얘기 하지 말자…':initialDemo.last.reply}]);setInput('');setBalls(0);go('chat');}
  function cancelAnalysis(){analysisController.current?.abort();request.current++;go('main');}
- async function analyze(){
-  if(!name.trim())return;
+ async function analyze(testMode=false){
+  const selectedDate=testMode?'2026-10-01':dateInput.current?.value||date;if(!name.trim()||!selectedDate)return;setDate(selectedDate);if(testMode){setDataMode('sample');setTeam('한화');setDate('2026-10-01');}
   analysisController.current?.abort();
   const controller=new AbortController();analysisController.current=controller;
-  const id=++request.current;setError('');setReport(null);setAnalysisStage(0);go('loading');
+  const id=++request.current;setError('');setReport(null);setDaily(null);setAnalysisStage(0);go('loading');
   try{
    await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
    controller.signal.throwIfAborted();
    const result=await runAnalysis(
-    ()=>getForecast({bossTitle:name.trim(),team,player:'팀 전체',favoriteMenus:['국밥']},controller.signal),
+    async()=>{if(testMode)return {daily:null,report:extremeDemo(name.trim())};if(dataMode==='live'){const daily=await getDailyMood({team,date:selectedDate},controller.signal);return {daily,report:dailyAsReport(daily,name.trim())};}return {daily:null,report:await getForecast({bossTitle:name.trim(),team,player:'팀 전체',favoriteMenus:['국밥']},controller.signal)};},
     stage=>{if(id===request.current)setAnalysisStage(stage);},
     ()=>waitForMotion(controller.signal),controller.signal);
    if(id!==request.current)return;
-   setReport(result);setMood('vbad');go('result');
+   setDaily(result.daily);setReport(result.report);setMood(result.report?moodKey(result.report.forecast.mood):'normal');go(result.daily&&result.daily.status!=='ready'?'no_game':'result');
   }catch(e){
    if(id!==request.current||controller.signal.aborted)return;
    setError(e instanceof Error?e.message:'자료를 불러오지 못했어요. 다시 시도해주세요.');go('main');
@@ -65,19 +69,22 @@ export default function V7App(){
 
  function navigate(href:string){if(href==='Main.dc.html'){request.current++;go('main');}else if(href==='WebLoading.dc.html'){void analyze();}else if(href==='WebResult.dc.html'){if(report)go('result');else void analyze();}else if(href==='SimChat.dc.html')startChat();else if(href==='SimWarning.dc.html')go('warning');}
  function send(){const value=input.trim();if(!value||game.ended)return;const next=playDemoTurn(game,value);setGame(next);setMessages(m=>[...m,{role:'user',text:value},{role:'assistant',text:next.last.reply}]);setInput('');if(!next.last.out)setBalls(b=>(b+1)%4);if(next.ended)go('warning');}
- function text(s:string){return s.replaceAll('야친자 기분 기상청','야친자로부터 살아남기').replaceAll('김 과장님','__NAME__').replaceAll('과장님','__NAME__').replaceAll('__NAME__',name).replaceAll('직장 상사 · 존댓말',relation==='friend'?'친구 · 반말':'직장 상사 · 존댓말').replaceAll('LG',team).replaceAll('친구과','친구와').replaceAll('[YYYY-MM-DD]',report?.performance.asOf??'샘플').replaceAll('[N]점','예시 3.2점').replaceAll('경기 기록과 AI로 만든 재미용 예보예요','샘플 경기 기반 체험 결과예요').replaceAll('예보는 경기 기록과 AI로 만든 재미용 결과예요.','현재는 샘플 경기와 체험 대화로 동작해요.').replaceAll('마지막 스트라이크: "올해 가을야구는 못 가겠죠?"',`마지막 스트라이크: “${messages.filter(m=>m.role==='user').at(-1)?.text??''}”`);}
+ function text(s:string){return s.replaceAll('야친자 기분 기상청','야친자로부터 살아남기').replaceAll('새 예보 만들기','대화 상대 설정').replaceAll('예보를 만드는 데만','대화 상황을 만드는 데만').replaceAll('다시 예보하기','다른 경기로 다시 하기').replaceAll('예보로 돌아가기','분석 결과로 돌아가기').replaceAll('내일 기분','경기 후 팬심').replaceAll('내일의 조언','첫마디 생존 팁').replaceAll('김 과장님','__NAME__').replaceAll('과장님','__NAME__').replaceAll('__NAME__',name).replaceAll('직장 상사 · 존댓말',relation==='friend'?'친구 · 반말':'직장 상사 · 존댓말').replaceAll('LG',team).replaceAll('친구과','친구와').replaceAll('[YYYY-MM-DD]',report?.performance.asOf??date).replaceAll('[N]점','예시 3.2점').replaceAll('경기 기록과 AI로 만든 재미용 예보예요',dataMode==='live'?'선택한 날짜의 경기 기록을 바탕으로 한 재미용 결과예요':'샘플 경기로 만든 체험 결과예요').replaceAll('예보는 경기 기록과 AI로 만든 재미용 결과예요.','실제 사람의 기분을 알 수는 없지만, 첫마디는 연습할 수 있어요.').replaceAll('마지막 스트라이크: "올해 가을야구는 못 가겠죠?"',`마지막 스트라이크: “${messages.filter(m=>m.role==='user').at(-1)?.text??''}”`);}
  const selected=teams.find(t=>t.name===team)!;const m=MOODS[mood];
- const values:Values={sentence:text(m.sentence),faceFill:m.face,blush:m.blush,eyeRy:m.eyeRy,browW:m.browW,browL:m.browL,browR:m.browR,xAnim:m.x,yAnim:m.y,sAnim:m.s,rAnim:m.r,ariaLabel:`기분이 ${m.label}인 야구공 캐릭터`,isVgood:mood==='vgood',isGood:mood==='good',isNormal:mood==='normal',isBad:mood==='bad',isVbad:mood==='vbad',openEyes:mood!=='vgood',moods:ORDER.map(k=>({label:MOODS[k].label,pressed:String(k===mood),bg:k===mood?'#1C1C1E':'#FFFFFF',fg:k===mood?'#FFFFFF':'#1C1C1E',border:k===mood?'#1C1C1E':'#D1D1D6',pick:()=>setMood(k)}))};
+ const values:Values={sentence:report?.forecast.reason??text(m.sentence),faceFill:m.face,blush:m.blush,eyeRy:m.eyeRy,browW:m.browW,browL:m.browL,browR:m.browR,xAnim:m.x,yAnim:m.y,sAnim:m.s,rAnim:m.r,ariaLabel:`기분이 ${m.label}인 야구공 캐릭터`,isVgood:mood==='vgood',isGood:mood==='good',isNormal:mood==='normal',isBad:mood==='bad',isVbad:mood==='vbad',openEyes:mood!=='vgood',moods:ORDER.map(k=>({label:MOODS[k].label,pressed:String(k===mood),bg:k===mood?'#1C1C1E':'#FFFFFF',fg:k===mood?'#FFFFFF':'#1C1C1E',border:k===mood?'#1C1C1E':'#D1D1D6',pick:()=>setMood(k)}))};
  function count(){return <aside className="v7-count" aria-label={`볼 ${balls}, 스트라이크 ${game.outs}, 아웃 ${game.outs}`}><div className="v7-board">{[{label:'B',num:balls,total:3,color:'#34C759'},{label:'S',num:game.outs,total:2,color:'#FFCC00'},{label:'O',num:game.outs,total:2,color:'#FF3B30'}].map(row=><div className="v7-countrow" key={row.label}><b>{row.label}</b><div className="v7-lights">{Array.from({length:row.total},(_,i)=><i key={i} style={{background:i<row.num?row.color:undefined}}/>)}</div></div>)}</div><strong>{game.outs===0?'플레이볼!':game.outs===1?'원아웃!':game.outs===2?'투아웃!':'삼진 아웃!'}</strong><small>무난한 말은 볼<br/>위험한 말은 스트라이크<br/>말실수 세 번이면 대화 끝</small></aside>;}
  function render(n:TemplateNode,key:string,v:Values):ReactNode{
   if(typeof n==='string')return text(String(interpolate(n,v)??''));
+  if(n.attrs['aria-label']==='기분 미리보기')return null;
+  if(n.tag==='section'&&n.children.some(c=>typeof c!=='string'&&c.tag==='h2'&&c.children.includes('왜 나쁠까요?'))){return <section key={key} className="result-data-card"><h2>선택한 경기에서는</h2><p className="result-source">{dataMode==='live'?'경기 기록':'샘플 자료'} · {report?.performance.asOf}</p>{report?.performance.teamGames.map((g,i)=><div className="result-game" key={i}><span>{g.date}<br/><small>{g.opponent}전</small></span><strong>{g.teamScore} : {g.oppScore}<em>{g.result==='W'?'승리':g.result==='L'?'패배':'무승부'}</em></strong></div>)}</section>;}
+  if(n.tag==='section'&&n.children.some(c=>typeof c==='object'&&c.children.includes('내일의 조언'))){return <section key={key} className="result-tips-card"><span>첫마디 생존 팁</span><h2>{mood==='vbad'||mood==='bad'?'오늘은 한마디 더 조심.':'말문을 가볍게 열어보세요.'}</h2><ul>{report?.forecast.tips.map(tip=><li key={tip}>{tip}</li>)}</ul></section>;}
   if(n.tag==='sc-if')return interpolate(n.attrs.value,v)?<Fragment key={key}>{n.children.map((c,i)=>render(c,`${key}.${i}`,v))}</Fragment>:null;
   if(n.tag==='sc-for'){const list=interpolate(n.attrs.list,v) as Values[];return <Fragment key={key}>{list.map((item,j)=>n.children.map((c,i)=>render(c,`${key}.${j}.${i}`,{...v,[n.attrs.as]:item})))}</Fragment>;}
   if(n.attrs['data-slot']==='messages')return <div key={key} className="v7-messages" ref={log} role="log" aria-live="polite">{messages.map((item,i)=><div className={`v7-message ${item.role}`} key={i}>{item.role==='assistant'&&<span className="v7-avatar">{name[0]}</span>}<p>{item.text}</p></div>)}</div>;
   if(n.attrs['data-slot']==='count')return <Fragment key={key}>{count()}</Fragment>;
   const props:Record<string,unknown>={key};for(const [a,b]of Object.entries(n.attrs)){if(a.startsWith('hint-'))continue;if(a==='style')props.style=inlineStyle(b,v);else if(a.toLowerCase()==='onclick')props.onClick=interpolate(b,v);else props[attributeNames[a]??a]=interpolate(b,v);}
-  const style=(props.style??{}) as CSSProperties;
-  if(n.attrs.href){props.onClick=(e:{preventDefault:()=>void})=>{e.preventDefault();navigate(n.attrs.href);};}
+  const style=(props.style??{}) as CSSProperties;if(key==='root'&&screen==='main')props.className='stadium-content';
+  if(n.attrs.href){props.onClick=(e:{preventDefault:()=>void})=>{e.preventDefault();navigate(n.attrs.href);};if(n.attrs.href==='WebLoading.dc.html'&&(!name.trim()||!date)){props['aria-disabled']=true;props.onClick=(e:{preventDefault:()=>void})=>e.preventDefault();}}
   if(n.attrs['data-relation']){const on=relation===n.attrs['data-relation'];props['aria-checked']=on;props.onClick=()=>setRelation(n.attrs['data-relation']);props.style={...style,background:on?'#FFFFFF':'transparent',boxShadow:on?'0 1px 3px #0000001f':'none',fontWeight:on?700:500};}
   if(n.attrs['data-team']){const on=team===n.attrs['data-team'];props['aria-pressed']=on;props.onClick=()=>setTeam(n.attrs['data-team']);props.style={...style,border:on?'2px solid #0071E3':'1px solid #E5E5EA'};}
   if(n.attrs.id==='boss-name'){props.value=name;props.maxLength=20;props.onChange=(e:{target:{value:string}})=>setName(e.target.value);}
@@ -88,10 +95,11 @@ export default function V7App(){
   if(style.justifyContent==='space-between'&&style.alignItems==='baseline')props['data-result-row']='true';
   if(n.attrs.role==='dialog')props['data-warning-dialog']='true';
   if(n.tag==='a'&&n.attrs.href==='SimWarning.dc.html')return null;
+  if(screen==='main'&&n.tag==='div'&&String(style.gridTemplateColumns).includes('auto-fill'))props.className='team-picker-grid';
   if(n.attrs['data-team']){const label=n.attrs['data-team'];return createElement('button',props,<Image key="logo" src={teamLogos[label]} alt="" width={36} height={36} sizes="36px" style={{width:36,height:36,objectFit:'contain',flexShrink:0}}/>,label);}
   if(n.tag==='span'&&style.background==='#C30452')return <Image key={key} src={teamLogos[team]} alt={`${team} 로고`} width={24} height={24} sizes="24px" style={{width:24,height:24,objectFit:'contain'}}/>;
-  if(n.tag==='input')return createElement(n.tag,props);
-  return createElement(n.tag,props,...n.children.map((c,i)=>render(c,`${key}.${i}`,v)));
+  if(n.tag==='input')return createElement(n.tag,props);if(screen==='main'&&n.tag==='a'&&n.attrs.href==='WebLoading.dc.html')return <div key={key} className='analysis-actions'>{createElement(n.tag,props,`${team}로 분석 시작 →`)}<button className='extreme-test' aria-label='테스트 · 극대노 체험' disabled={!name.trim()} onClick={()=>void analyze(true)}>테스트 · 극대노</button><small>가장 화난 팬심을 바로 경험하는 테스트 시나리오예요.</small></div>;
+  const children=n.children.map((c,i)=>render(c,`${key}.${i}`,v));if(screen==='main'&&n.tag==='main')children.unshift(<div key='context' className='experience-context'><section className='season-notice'><strong>비시즌에도, 지난 경기로 눈치전 한 판.</strong><p>선택한 경기가 끝난 다음 날, 야구 팬을 마주치는 가상 상황으로 연습합니다.</p><label>체험 기준일<input aria-label='체험 기준일' type='date' ref={dateInput} value={date} onInput={e=>setDate(e.currentTarget.value)} onChange={e=>setDate(e.target.value)}/></label><fieldset><legend>경기 자료</legend><label><input type='radio' checked={dataMode==='live'} onChange={()=>setDataMode('live')}/>선택한 날짜의 경기</label><label><input type='radio' checked={dataMode==='sample'} onChange={()=>setDataMode('sample')}/>샘플로 먼저 체험</label></fieldset></section><section className='recommended-team'><Image src={teamLogos.LG} alt='' width={52} height={52} style={{objectFit:'contain'}}/><div><small>추천 경기 · 2026-10-01</small><h2>한 점 차로 진 다음 날, 무슨 말을 할까요?</h2><p>LG 5 : 6 SSG. 이 경기가 끝난 다음 날의 팬과 대화를 연습해보세요.</p></div><button onClick={()=>{setTeam('LG');setDate('2026-10-01');setDataMode('live');}}>{team==='LG'&&date==='2026-10-01'?'추천 경기 선택됨':'이 경기로 골라보기'}</button></section></div>);return createElement(n.tag,props,...children);
  }
- return <div className="v7-root" data-screen={screen}><div className="v7-notice">가상 상대 · 샘플 경기로 하는 대화 체험입니다. 실제 메시지는 보내지 않아요.</div>{error&&<p className="v7-error" role="alert">{error}</p>}{screen==='loading'?<AnalysisLoading stage={analysisStage} team={team} logo={teamLogos[team]} onCancel={cancelAnalysis}/>:render(design[screen] as TemplateNode,'root',values)}</div>;
+ return <div className="v7-root" data-screen={screen}>{error&&<p className="v7-error" role="alert">{error}</p>}{screen==='no_game'?<NoGame date={date} team={team} name={name} pending={daily?.status==='pending'} logo={teamLogos[team]} onBack={()=>go('main')} onChat={startChat}/>:screen==='loading'?<AnalysisLoading stage={analysisStage} team={team} logo={teamLogos[team]} onCancel={cancelAnalysis}/>:render(design[screen] as TemplateNode,'root',values)}{screen==='main'&&<footer className='stadium-credit'>사진: 잠실야구장 · Cyberdoomslayer, Wikimedia Commons (<a href='https://creativecommons.org/licenses/by-sa/4.0/' target='_blank' rel='noreferrer'>CC BY-SA 4.0</a>)</footer>}</div>;
 }

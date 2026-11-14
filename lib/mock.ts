@@ -2,7 +2,7 @@ import type { ForecastResponse } from "@/types/forecast";
 
 // 화면·API 개발용 샘플 응답. 실제 데이터가 아닙니다.
 
-/** 맑음 사례: 팀 연승 + 선수 맹타 */
+/** 매우 좋음 사례: 팀 연승 + 선수 맹타 */
 export const MOCK_SUNNY = {
   input: {
     bossTitle: "과장님",
@@ -32,9 +32,9 @@ export const MOCK_SUNNY = {
     asOf: "2026-10-01",
   },
   forecast: {
-    mood: "맑음",
+    mood: "매우 좋음",
     moodScore: 83,
-    headline: "LG 오지환 선수 맹타로 내일 과장님 기분은 맑음",
+    headline: "LG 오지환 선수 맹타로 내일 과장님 기분은 매우 좋음",
     reason:
       "LG 트윈스가 최근 5경기 4승 1무로 상승세입니다. 오지환 선수도 3경기 연속 멀티히트를 기록해 과장님의 출근길 표정이 밝을 것으로 예상됩니다.",
     lunch: { menu: "삼겹살", comment: "축하 분위기엔 고기. 오늘은 과장님이 쏠 확률도 있습니다." },
@@ -46,7 +46,7 @@ export const MOCK_SUNNY = {
   },
 } satisfies ForecastResponse;
 
-/** 천둥번개 사례: 팀 연패 + 투수 난조. 긴 선수 이름, 메뉴 1개 */
+/** 매우 안 좋음 사례: 팀 연패 + 투수 난조. 긴 선수 이름, 메뉴 1개 */
 export const MOCK_THUNDER = {
   input: {
     bossTitle: "팀장님",
@@ -75,9 +75,9 @@ export const MOCK_THUNDER = {
     asOf: "2026-10-01",
   },
   forecast: {
-    mood: "천둥번개",
+    mood: "매우 안 좋음",
     moodScore: -92,
-    headline: "한화 몽고메리-라미레스 선수 난조로 내일 팀장님 기분은 천둥번개",
+    headline: "한화 몽고메리-라미레스 선수 난조로 내일 팀장님 기분은 매우 안 좋음",
     reason:
       "한화 이글스가 5연패에 빠졌고, 어제는 1-11 대패였습니다. 선발 몽고메리-라미레스 선수가 2경기 연속 조기 강판되며 팀장님의 인내심이 한계에 다다른 것으로 분석됩니다.",
     lunch: { menu: "순댓국", comment: "뜨끈한 국물로 속을 달래 드리세요. 메뉴 선택권은 팀장님께." },

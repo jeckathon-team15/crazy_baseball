@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "source": "sample",
+  "asOf": "2026-11-14T08:00:00+09:00",
+  "teams": [
+    {
+      "team": "한화 이글스",
+      "games": [
+        {
+          "gameId": "sample-5",
+          "date": "2026-11-13",
+          "opponent": "삼성 라이온즈",
+          "teamScore": 1,
+          "oppScore": 3,
+          "result": "L",
+          "startsAt": "2026-11-13T18:30:00+09:00",
+          "endsAt": "2026-11-13T21:30:00+09:00"
+        },
+        {
+          "gameId": "sample-4",
+          "date": "2026-11-12",
+          "opponent": "삼성 라이온즈",
+          "teamScore": 2,
+          "oppScore": 4,
+          "result": "L",
+          "startsAt": "2026-11-12T18:30:00+09:00",
+          "endsAt": "2026-11-12T21:30:00+09:00"
+        },
+        {
+          "gameId": "sample-3",
+          "date": "2026-11-11",
+          "opponent": "삼성 라이온즈",
+          "teamScore": 1,
+          "oppScore": 3,
+          "result": "L",
+          "startsAt": "2026-11-11T18:30:00+09:00",
+          "endsAt": "2026-11-11T21:30:00+09:00"
+        },
+        {
+          "gameId": "sample-2",
+          "date": "2026-11-10",
+          "opponent": "삼성 라이온즈",
+          "teamScore": 4,
+          "oppScore": 1,
+          "result": "W",
+          "startsAt": "2026-11-10T18:30:00+09:00",
+          "endsAt": "2026-11-10T21:30:00+09:00"
+        },
+        {
+          "gameId": "sample-1",
+          "date": "2026-11-09",
+          "opponent": "삼성 라이온즈",
+          "teamScore": 2,
+          "oppScore": 0,
+          "result": "W",
+          "startsAt": "2026-11-09T18:30:00+09:00",
+          "endsAt": "2026-11-09T21:30:00+09:00"
+        }
+      ],
+      "players": {},
+      "sentiment": {
+        "positive": 2,
+        "neutral": 0,
+        "negative": 8,
+        "uncertain": 0,
+        "validCount": 10,
+        "score": -60,
+        "topTopic": "타격",
+        "negativeTopTopic": "타격"
+      },
+      "sources": [
+        "sample"
+      ],
+      "gameScore": -59,
+      "teamScore": -59.2,
+      "streak": -3,
+      "validUntil": "2026-11-20T12:30:00.000Z"
+    },
+    {
+      "team": "삼성 라이온즈",
+      "games": [
+        {
+          "gameId": "sample-5",
+          "date": "2026-11-13",
+          "opponent": "한화 이글스",
+          "teamScore": 3,
+          "oppScore": 1,
+          "result": "W",
+          "startsAt": "2026-11-13T18:30:00+09:00",
+          "endsAt": "2026-11-13T21:30:00+09:00"
+        },
+        {
+          "gameId": "sample-4",
+          "date": "2026-11-12",
+          "opponent": "한화 이글스",
+          "teamScore": 4,
+          "oppScore": 2,
+          "result": "W",
+          "startsAt": "2026-11-12T18:30:00+09:00",
+          "endsAt": "2026-11-12T21:30:00+09:00"
+        },
+        {
+          "gameId": "sample-3",
+          "date": "2026-11-11",
+          "opponent": "한화 이글스",
+          "teamScore": 3,
+          "oppScore": 1,
+          "result": "W",
+          "startsAt": "2026-11-11T18:30:00+09:00",
+          "endsAt": "2026-11-11T21:30:00+09:00"
+        },
+        {
+          "gameId": "sample-2",
+          "date": "2026-11-10",
+          "opponent": "한화 이글스",
+          "teamScore": 1,
+          "oppScore": 4,
+          "result": "L",
+          "startsAt": "2026-11-10T18:30:00+09:00",
+          "endsAt": "2026-11-10T21:30:00+09:00"
+        },
+        {
+          "gameId": "sample-1",
+          "date": "2026-11-09",
+          "opponent": "한화 이글스",
+          "teamScore": 0,
+          "oppScore": 2,
+          "result": "L",
+          "startsAt": "2026-11-09T18:30:00+09:00",
+          "endsAt": "2026-11-09T21:30:00+09:00"
+        }
+      ],
+      "players": {},
+      "sentiment": {
+        "positive": 8,
+        "neutral": 2,
+        "negative": 0,
+        "uncertain": 0,
+        "validCount": 10,
+        "score": 80,
+        "topTopic": "기타",
+        "negativeTopTopic": null
+      },
+      "sources": [
+        "sample"
+      ],
+      "gameScore": 59,
+      "teamScore": 63.2,
+      "streak": 3,
+      "validUntil": "2026-11-20T12:30:00.000Z"
+    }
+  ]
+}
