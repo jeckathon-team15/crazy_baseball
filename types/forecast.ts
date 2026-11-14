@@ -34,12 +34,12 @@ export type Performance = {
   asOf: string; // 데이터 기준일
 };
 
-export type Mood = "맑음" | "구름 조금" | "흐림" | "비" | "천둥번개";
+export type Mood = "매우 안 좋음" | "안 좋음" | "보통" | "좋음" | "매우 좋음";
 
 export type Forecast = {
   mood: Mood;
   moodScore: number; // -100 ~ 100
-  headline: string; // "LG 오지환 선수 부진으로 내일 과장님 기분은 흐림"
+  headline: string; // "LG 오지환 선수 부진으로 내일 과장님 기분은 안 좋음"
   reason: string; // 근거 2~3문장
   lunch: { menu: string; comment: string }; // favoriteMenus 중 하나
   tips: string[]; // 대처 요령 2~3개
