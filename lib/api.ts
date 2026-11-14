@@ -3,15 +3,17 @@ import type { BossInput, ForecastResponse } from "@/types/forecast";
 
 // 클라이언트에서 /api/forecast를 호출합니다. (웹 담당 관리)
 
-export async function getForecast(input: BossInput): Promise<ForecastResponse> {
+export async function getForecast(input: BossInput, signal?: AbortSignal): Promise<ForecastResponse> {
   let res: Response;
   try {
     res = await fetch("/api/forecast", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
+      signal,
     });
-  } catch {
+  } catch (error) {
+    if (signal?.aborted) throw error;
     throw new Error("서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.");
   }
 

@@ -9,6 +9,8 @@ import { CHAT_START_COUNT, DISPLAY_NAME_RANGE } from "@/lib/config";
 import type { ForecastResponse, GameResult } from "@/types/forecast";
 import type { ChatMessage, Count, Relation, Tip } from "@/types/chat";
 import "./v7.css";
+import AnalysisLoading from "./analysis-loading";
+import { runAnalysis, waitForMotion, type AnalysisStage } from "./analysis-progress";
 import Image from "next/image";
 import lgLogo from "./assets/team-logos/lg_sym.png";
 import doosanLogo from "./assets/team-logos/doosan_sym.png";
@@ -72,6 +74,7 @@ export default function V7App(){
  const [mood,setMood]=useState<MoodKey>('vbad');const [report,setReport]=useState<ForecastResponse|null>(null);const [error,setError]=useState('');
  const [messages,setMessages]=useState<ChatMessage[]>([]);const [input,setInput]=useState('');
  const [count,setCount]=useState<Count>({...CHAT_START_COUNT});const [tips,setTips]=useState<Tip[]|null>(null);const [pending,setPending]=useState(false);
+ const [analysisStage,setAnalysisStage]=useState<AnalysisStage>(0);const analysisController=useRef<AbortController|null>(null);
  const request=useRef(0);const log=useRef<HTMLDivElement>(null);
  const who=name.trim();const nameOk=who.length>=DISPLAY_NAME_RANGE.min&&who.length<=DISPLAY_NAME_RANGE.max;const ended=count.outs>=3;const copy=RELATION_COPY[relation];
  useEffect(()=>{if(log.current)log.current.scrollTop=log.current.scrollHeight;},[messages,pending]);
@@ -85,13 +88,27 @@ export default function V7App(){
  }
  function resetChat(s:Session){setMessages([{role:'partner',text:RELATION_COPY[s.relation].greeting}]);setCount({...CHAT_START_COUNT});setTips(null);setInput('');setError('');}
  function startChat(){const s=go('chat');if(s)resetChat(s);}
+ function cancelAnalysis(){analysisController.current?.abort();request.current++;go('main');}
  async function analyze(){
   if(!nameOk)return;
   setSession({relation,displayName:who,team});
+  analysisController.current?.abort();
+  const controller=new AbortController();analysisController.current=controller;
+  const id=++request.current;setError('');setReport(null);setAnalysisStage(0);
   const s=go('loading');if(!s)return;
-  const id=++request.current;setError('');setReport(null);
-  try{const result=await getForecast({relation:s.relation,displayName:s.displayName,team:s.team,player:'팀 전체',favoriteMenus:['국밥']});if(id!==request.current)return;setReport(result);setMood(MOOD_KEY_BY_LABEL[result.forecast.mood]??'normal');go('result');}
-  catch(e){if(id!==request.current)return;setError(e instanceof Error?e.message:'자료를 불러오지 못했어요. 다시 시도해주세요.');go('main');}
+  try{
+   await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
+   controller.signal.throwIfAborted();
+   const result=await runAnalysis(
+    ()=>getForecast({relation:s.relation,displayName:s.displayName,team:s.team,player:'팀 전체',favoriteMenus:['국밥']},controller.signal),
+    stage=>{if(id===request.current)setAnalysisStage(stage);},
+    ()=>waitForMotion(controller.signal),controller.signal);
+   if(id!==request.current)return;
+   setReport(result);setMood(MOOD_KEY_BY_LABEL[result.forecast.mood]??'normal');go('result');
+  }catch(e){
+   if(id!==request.current||controller.signal.aborted)return;
+   setError(e instanceof Error?e.message:'자료를 불러오지 못했어요. 다시 시도해주세요.');go('main');
+  }
  }
  function restart(){clearSession();request.current++;setName('');setRelation('boss');setTeam('LG');setReport(null);setMessages([]);setTips(null);setCount({...CHAT_START_COUNT});go('main');}
  function navigate(href:string){if(href==='Main.dc.html'){if(screen==='warning')restart();else{request.current++;go('main');}}else if(href==='WebLoading.dc.html'){void analyze();}else if(href==='WebResult.dc.html'){if(report)go('result');else void analyze();}else if(href==='SimChat.dc.html')startChat();else if(href==='SimWarning.dc.html')go('warning');}
@@ -177,5 +194,5 @@ export default function V7App(){
   if(n.tag==='input')return createElement(n.tag,props);
   return createElement(n.tag,props,...n.children.map((c,i)=>render(c,`${key}.${i}`,v)));
  }
- return <div className="v7-root" data-screen={screen}><div className="v7-notice">가상 상대 · 샘플 경기로 하는 대화 체험입니다. 실제 메시지는 보내지 않아요.</div>{error&&<p className="v7-error" role="alert">{error}</p>}{render(design[screen] as TemplateNode,'root',values)}</div>;
+ return <div className="v7-root" data-screen={screen}><div className="v7-notice">가상 상대 · 샘플 경기로 하는 대화 체험입니다. 실제 메시지는 보내지 않아요.</div>{error&&<p className="v7-error" role="alert">{error}</p>}{screen==='loading'?<AnalysisLoading stage={analysisStage} team={team} logo={teamLogos[team]} onCancel={cancelAnalysis}/>:render(design[screen] as TemplateNode,'root',values)}</div>;
 }
