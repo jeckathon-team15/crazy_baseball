@@ -1,0 +1,6 @@
+import Image,{type StaticImageData} from "next/image";
+import ball from "./assets/baseball-runner.svg";
+
+export default function NoGame({date,team,name,pending,logo,onBack,onChat}:{date:string;team:string;name:string;pending:boolean;logo:StaticImageData;onBack:()=>void;onChat:()=>void}){
+ return <main className="no-game-page"><header><strong>야친자로부터 살아남기</strong><button onClick={onBack}>날짜 다시 선택</button></header><section className="no-game-card"><span className="no-game-kicker"><Image src={logo} alt="" width={26} height={26} style={{objectFit:"contain"}}/>{date} · {team}</span><div className="resting-ball"><Image src={ball} alt="쉬고 있는 야구공 캐릭터" width={140} height={140}/><span aria-hidden="true">{pending?"…":"Zz"}</span></div><h1>{pending?"아직 승부가 끝나지 않았어요.":"그날은, 야구도 잠깐 쉬었어요."}</h1><p>{pending?"경기가 예정되어 있거나 아직 진행 중입니다. 최종 결과가 나오기 전에는 기분을 단정하지 않아요.":"선택한 날짜에 종료된 경기가 없습니다. 휴식일·취소·비시즌 중 어떤 이유인지는 현재 자료만으로 구분하지 않아요."}</p></section><section className="no-game-card"><h2>경기가 없다고, 마음까지 쉬는 건 아니니까.</h2><p>점수도, 승패도 억지로 만들지 않았어요. 다른 날짜를 고르거나 가상 상황으로 대화를 연습해보세요.</p><div className="no-game-actions"><button onClick={onBack}>다른 경기 날짜 고르기</button><button onClick={onChat}>{name}에게 말 걸기</button></div><small>대화 연습은 실제 경기와 분리된 체험 시나리오입니다.</small></section></main>;
+}
