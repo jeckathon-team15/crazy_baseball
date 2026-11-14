@@ -44,7 +44,6 @@ const ADVICE_TONES:Record<'green'|'yellow'|'red',AdviceTone>={
  red:{bg:'#FFF2F3',label:'#D70015',title:'#8A0010'},
 };
 const ADVICE_TONE_BY_MOOD:Record<MoodKey,keyof typeof ADVICE_TONES>={vgood:'green',good:'green',normal:'yellow',bad:'red',vbad:'red'};
-const isTextNode=(n:TemplateNode,text:string)=>typeof n!=='string'&&n.children[0]===text;
 
 export default function V7App(){
  const [screen,setScreen]=useState<Screen>('main');
@@ -105,7 +104,7 @@ const request=useRef(0);const log=useRef<HTMLDivElement>(null);
   if(n.attrs['aria-label']==='기분 미리보기')return null;
   if(screen==='main'&&n.tag==='p'&&JSON.stringify(n.children).includes('입력한 정보는'))return null;
   if(n.tag==='section'&&n.children.some(c=>typeof c!=='string'&&c.tag==='h2'&&c.children.includes('왜 나쁠까요?'))){return <section key={key} className="result-data-card"><h2>선택한 경기에서는</h2><p className="result-source">{dataMode==='live'?'경기 기록':'샘플 자료'} · {report?.performance.asOf}</p>{report?.performance.teamGames.map((g,i)=><div className="result-game" key={i}><span>{g.date}<br/><small>{g.opponent}전</small></span><strong>{g.teamScore} : {g.oppScore}<em>{g.result==='W'?'승리':g.result==='L'?'패배':'무승부'}</em></strong></div>)}</section>;}
-  if(n.tag==='section'&&n.children.some(c=>typeof c==='object'&&c.children.includes('내일의 조언'))){return <section key={key} className="result-tips-card"><span>첫마디 생존 팁</span><h2>{mood==='vbad'||mood==='bad'?'오늘은 한마디 더 조심.':'말문을 가볍게 열어보세요.'}</h2><ul>{report?.forecast.tips.map(tip=><li key={tip}>{tip}</li>)}</ul></section>;}
+  if(n.tag==='section'&&n.children.some(c=>typeof c==='object'&&c.children.includes('내일의 조언'))){const toneName=ADVICE_TONE_BY_MOOD[mood];const tone=ADVICE_TONES[toneName];return <section key={key} className="result-tips-card" data-advice-tone={toneName} style={{background:tone.bg,transition:'background .3s'}}><span style={{color:tone.label}}>첫마디 생존 팁</span><h2 style={{color:tone.title}}>{mood==='vbad'||mood==='bad'?'오늘은 한마디 더 조심.':'말문을 가볍게 열어보세요.'}</h2><ul>{report?.forecast.tips.map(tip=><li key={tip}>{tip}</li>)}</ul></section>;}
   if(n.tag==='sc-if')return interpolate(n.attrs.value,v)?<Fragment key={key}>{n.children.map((c,i)=>render(c,`${key}.${i}`,v))}</Fragment>:null;
   if(n.tag==='sc-for'){const list=interpolate(n.attrs.list,v) as Values[];return <Fragment key={key}>{list.map((item,j)=>n.children.map((c,i)=>render(c,`${key}.${j}.${i}`,{...v,[n.attrs.as]:item})))}</Fragment>;}
   if(n.attrs['data-slot']==='messages')return <div key={key} className="v7-messages" ref={log} role="log" aria-live="polite">{messages.map((item,i)=><div className={`v7-message ${item.role==='user'?'user':'assistant'}`} key={i}>{item.role==='partner'&&<span className="v7-avatar">{name[0]}</span>}<p>{item.text}</p></div>)}{pending&&<div className='v7-message assistant' aria-label='답장 작성 중'><p>…</p></div>}</div>;
@@ -119,12 +118,6 @@ const request=useRef(0);const log=useRef<HTMLDivElement>(null);
   if(n.attrs.id==='chat-input'){props.value=input;props.maxLength=160;props.disabled=chatCount.outs>=3||pending;props.onChange=(e:{target:{value:string}})=>setInput(e.target.value);props.onKeyDown=(e:{key:string;nativeEvent:{isComposing:boolean}})=>{if(e.key==='Enter'&&!e.nativeEvent.isComposing)send();};}
   if(n.attrs['data-action']==='send'){props.onClick=send;props.disabled=!input.trim()||chatCount.outs>=3||pending;}
   if(style.background==='#C30452')props.style={...style,background:selected.color};
-  if(screen==='result'){
-   const tone=ADVICE_TONES[ADVICE_TONE_BY_MOOD[mood]];
-   if(n.tag==='section'&&n.children.some(c=>isTextNode(c,'내일의 조언'))){props.style={...style,background:tone.bg,transition:'background .3s'};props['data-advice-tone']=ADVICE_TONE_BY_MOOD[mood];}
-   else if(isTextNode(n,'내일의 조언'))props.style={...style,color:tone.label};
-   else if(isTextNode(n,'최대한 피하세요!'))props.style={...style,color:tone.title};
-  }
   if(n.tag==='div'&&n.children.some(c=>typeof c!=='string'&&c.attrs['data-slot']==='messages'))props['data-chat-layout']='true';
   if(style.justifyContent==='space-between'&&style.alignItems==='baseline')props['data-result-row']='true';
   if(n.tag==='section'&&n.attrs['aria-label']?.endsWith('과 대화')){props['aria-label']=`${name} 대화`;props['data-chat-section']='true';}
