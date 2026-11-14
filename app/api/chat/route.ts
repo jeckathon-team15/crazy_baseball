@@ -1,5 +1,5 @@
 import type { ChatMessage, ChatProfile, ChatRequest, Count } from "@/types/chat";
-import { CHAT_START_COUNT } from "@/lib/config";
+import { CHAT_START_COUNT, AI_SERVICE_ENABLED } from "@/lib/config";
 import { runChatTurn, finishChat } from "@/lib/ai/chat";
 
 // POST /api/chat — 대화 한 턴. 서버는 아무것도 저장하지 않고, 화면이 매번 대화 전체와 볼카운트를 보냅니다.
@@ -49,6 +49,7 @@ function parseCount(v: unknown): Count {
 }
 
 export async function POST(request: Request) {
+  if (!AI_SERVICE_ENABLED) return Response.json({ error: "시연이 종료되어 AI 대화 및 대화 분석 기능을 중단했습니다." }, { status: 410 });
   let body: unknown;
   try {
     body = await request.json();

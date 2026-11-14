@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { ChatMessage, ChatProfile, ChatRequest, ChatResponse, Count, Tip } from "@/types/chat";
 import {
   AI_TIMEOUT_MS,
+  AI_SERVICE_ENABLED,
   CHAT_FALLBACK_TIPS,
   CHAT_RECENT_MESSAGES,
   CHAT_TIP_COUNT,
@@ -148,6 +149,7 @@ async function callTool(
   messages: Anthropic.MessageParam[],
   tool: Anthropic.Tool,
 ): Promise<unknown> {
+  if (!AI_SERVICE_ENABLED) return null;
   const response = await getClient().messages.create(
     {
       model: CLAUDE_MODEL,

@@ -33,6 +33,8 @@ export const FAVORITE_MENUS_RANGE = { min: 1, max: 5 } as const;
 /** 부르는 이름 글자 수 (앞뒤 공백 제거 후) */
 export const DISPLAY_NAME_RANGE = { min: 1, max: 10 } as const;
 
+/** Paid AI access is stopped after the hackathon. */
+export const AI_SERVICE_ENABLED = false;
 export const AI_TIMEOUT_MS = 10000;
 
 export const CLAUDE_MODEL = process.env.CLAUDE_MODEL ?? "claude-sonnet-5-5";
