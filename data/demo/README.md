@@ -34,3 +34,5 @@ node --conditions=react-server --import tsx scripts/build-forecast-snapshot.ts \
 `MOOD_SNAPSHOT_PATH=/tmp/yachinja-kbo-2026-10.json npm run dev`로 실행하면 분석용 `/api/forecast`에서 확인할 수 있다. 메인 화면의 `/api/daily-mood`는 시연용 스냅샷을 실제 커뮤니티 집계로 적용하지 않으며, 이 CSV를 자동으로 읽지도 않는다. 화면에 반영하려면 HTML/API 연결과 필요한 게시글 데이터를 별도로 준비해야 한다.
 
 이 파일에는 게시글, 감성 분석 결과, 사용자의 기분 정답이 없다. 기존 가상 게시글 CSV의 경기 ID는 이 실제 경기 데이터와 다르므로 그대로 합치지 않는다. 실제 커뮤니티 게시글과 사용자 피드백은 이용 범위를 확인해 따로 확보해야 하며, 이 경기 결과만으로 머신러닝 예측 성능을 판단할 수 없다.
+
+10월 30일 삼성·KIA 경기와 연결해 수동 확인한 소규모 실제 게시글 사례는 [커뮤니티 반응 탐색 자료](community-2026-10-30-README.md)에 정리했다. 표본이 부족해 감성 점수와 화면 예측에 자동 적용되지 않는다.
