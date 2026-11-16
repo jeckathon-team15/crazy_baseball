@@ -1,29 +1,56 @@
-# 야친자 기분 예측 API
+## 🚀 프로젝트 소개
 
-KBO 경기 결과와 팀별 커뮤니티 반응으로 팬의 기분을 다섯 단계로 예측하는 백엔드다. 감성 분석은 Python 사전·규칙 방식이며, 이용자가 직접 기록한 기분을 학습하면 다중 클래스 로지스틱 회귀 모델을 사용할 수 있다.
+해커톤 프로젝트 "야친자 경보기"의 리포지토리입니다.
 
-팀원이 만든 HTML 화면은 이 저장소에 아직 없다. `public/yachinja-api.js`와 `/api/daily-mood`를 사용해 연결하는 방법, GitHub Actions 자동 수집과 Vercel 배포 설정은 [팀 핸드오프](docs/TEAM_HANDOFF.md)에 정리했다.
+> "홈런볼 하나 권했을 뿐인데, 팀장님이 화났다."
 
-## 로컬 실행
+전날 끝내기 홈런으로 진 팀의 팬에게 "홈런볼 드실래요?"라고 말했다가 분위기가 얼어붙는 것처럼,
+야구를 모르는 사람에게는 평범한 말도 팬심의 지뢰가 됩니다.
 
-```bash
-npm ci
-npm run dev
-```
+야친자 경보기는 KBO 경기 결과와 커뮤니티 반응으로 **야구에 진심인 사람(야친자)의 내일 기분을 예보**하고,
+그 사람과의 대화를 **볼카운트로 미리 연습**해 볼 수 있는 시뮬레이터 서비스입니다.
+야구팬 상사, 친구, 가족과 경기 다음 날 대화하기 전에 분위기를 읽고 안전하게 말을 연습할 수 있습니다.
 
-`GET /api/daily-mood?team=한화&date=2026-11-07`로 응원팀의 경기와 기분 예측을 요청한다. 날짜를 생략하면 한국 시간 기준 어제를 조회한다. 기본 경기 출처는 KBO 웹 응답이며, API-SPORTS를 사용하려면 서버에 `GAME_RESULTS_SOURCE=api-sports`와 `API_SPORTS_KEY`를 설정한다. API 키를 브라우저 코드나 공개 저장소에 넣지 않는다. KBO 연동은 비공식 웹 응답을 사용하므로 운영 전 데이터 이용 조건을 확인한다.
+### 📅 개발 기간
 
-사용할 수 있는 실제 커뮤니티 집계가 없으면 경기 기반 규칙 예측을 반환한다. 실제 모델을 적용하려면 이용자가 기록한 다섯 단계 기분을 포함한 학습 데이터와 일치하는 경기·커뮤니티 데이터가 필요하다. 포함된 자료와 모델은 가상 시연용이며 실측 데이터나 성능이 아니다.
+2026.11 (해커톤)
 
-## 분석 및 테스트
+### ✨ 주요 기능
 
-- [수집·감성 분석과 학습 스크립트](scripts/README.md)
-- [기분 예측 모델 기술 명세](docs/mood-model-spec.md)
-- [팀 웹사이트 연동과 운영 핸드오프](docs/TEAM_HANDOFF.md)
+- **상대 설정**: 관계(직장 상사 / 친구), 부르는 이름, KBO 응원팀 선택
+- **내일 기분 예보**: 최근 경기 결과와 팬 반응을 분석해 5단계 기분을 야구공 캐릭터 표정으로 표시
+- **대화 연습**: Claude가 상대를 연기하고, 무난한 말은 볼 · 위험한 말은 스트라이크로 판정
+- **복기**: 3아웃으로 대화가 끝나면 마지막 실수 발언과 말하기 팁 제공
 
-```bash
-python3 -m pip install -r scripts/requirements-ml.txt
-python3 -m unittest discover -s scripts -p 'test_*.py'
-node --conditions=react-server --import tsx --test lib/analysis/*.test.ts
-npm run lint
-```
+## 🛠️ 기술 스택
+
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Claude](https://img.shields.io/badge/Claude%20API-D97757?style=for-the-badge&logo=anthropic&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+
+## 🫱🏻‍🫲🏻 멤버
+
+<table>
+  <tr>
+    <td align="center" width="200px">
+      <img src="https://github.com/imdongyoung.png" />
+      임동영<br/>
+      <b>imdongyoung</b><br/>
+      <a href="https://github.com/imdongyoung">@imdongyoung</a>
+    </td>
+    <td align="center" width="200px">
+      <img src="https://github.com/song0328.png" />
+      송호현<br/>
+      <b>song0328</b><br/>
+      <a href="https://github.com/song0328">@song0328</a>
+    </td>
+    <td align="center" width="200px">
+      <img src="https://github.com/beckspeca.png" />
+      신재원<br/>
+      <b>beckspeca</b><br/>
+      <a href="https://github.com/beckspeca">@beckspeca</a>
+    </td>
+  </tr>
+</table>
